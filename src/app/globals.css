@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+:root {
+  --background: #faf9f6;
+  --foreground: #221f19;
+  --surface: #ffffff;
+  --surface-alt: #f3f2ee;
+  --surface-sunk: #ececea;
+  --border: rgba(30, 25, 15, 0.1);
+  --border-strong: rgba(30, 25, 15, 0.18);
+  --text-muted: #736c5e;
+  --text-faint: #a49c8b;
+  --accent: #a3402b;
+  --accent-strong: #7a2f20;
+  --accent-soft: #f6e7e1;
+  --accent-soft-border: #e6c3b6;
+  --good: #3f7d4f;
+  --good-soft: #e5f0e6;
+  --warn: #a3752b;
+  --warn-soft: #f6eee1;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-surface-sunk: var(--surface-sunk);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-border: var(--accent-soft-border);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --font-sans: var(--font-comic-neue);
+  --font-mono: var(--font-plex-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #161310;
+    --foreground: #f2ece2;
+    --surface: #1e1a15;
+    --surface-alt: #241f19;
+    --surface-sunk: #141110;
+    --border: rgba(240, 232, 218, 0.11);
+    --border-strong: rgba(240, 232, 218, 0.2);
+    --text-muted: #b3a996;
+    --text-faint: #7d7461;
+    --accent: #e08a63;
+    --accent-strong: #f0ac8c;
+    --accent-soft: #332420;
+    --accent-soft-border: #573327;
+    --good: #7fbf8f;
+    --good-soft: #203023;
+    --warn: #d9b06b;
+    --warn-soft: #332a18;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-comic-neue), "Comic Sans MS", sans-serif;
+}
+
+.font-mono-tab {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

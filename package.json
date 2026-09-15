@@ -9,7 +9,8 @@
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "seed:admin": "tsx scripts/seed-admin.ts"
+    "seed:admin": "tsx scripts/seed-admin.ts",
+    "seed:worship-data": "tsx scripts/seed-worship-data.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
