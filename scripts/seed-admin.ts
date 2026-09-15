@@ -9,7 +9,10 @@ async function main() {
   const name = process.env.ADMIN_NAME;
   const email = process.env.ADMIN_EMAIL;
   if (!name || !email) {
-    throw new Error("Set ADMIN_NAME and ADMIN_EMAIL to seed the first admin");
+    // Safe to skip during an automated build (e.g. Vercel) before these are
+    // set — never fail the whole deploy just because no admin is configured yet.
+    console.log("ADMIN_NAME / ADMIN_EMAIL not set — skipping admin user creation.");
+    return;
   }
 
   const { db } = await import("../src/db");
@@ -23,7 +26,7 @@ async function main() {
     return;
   }
 
-  const password = randomBytes(9).toString("base64url");
+  const password = process.env.ADMIN_PASSWORD || randomBytes(9).toString("base64url");
   const passwordHash = await bcrypt.hash(password, 12);
 
   await db.insert(users).values({
@@ -35,7 +38,11 @@ async function main() {
   });
 
   console.log(`Admin user created: ${email}`);
-  console.log(`Temporary password: ${password}`);
+  console.log(
+    process.env.ADMIN_PASSWORD
+      ? "Password: the one you set in ADMIN_PASSWORD."
+      : `Temporary password: ${password}`,
+  );
 }
 
 main()
