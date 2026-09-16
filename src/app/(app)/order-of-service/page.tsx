@@ -45,13 +45,13 @@ export default async function OrderOfServicePage({
           </p>
         </div>
         <div className="no-print flex items-center gap-2">
+          <DateSwitcher date={date} />
           <Link
             href="/order-of-service/log"
             className="rounded-full border border-border-strong bg-surface px-3 py-1.5 text-sm font-semibold text-text-muted hover:border-accent"
           >
             History
           </Link>
-          <DateSwitcher date={date} />
         </div>
       </div>
       <p className="print:block mb-4 hidden text-sm font-semibold">{date}</p>
