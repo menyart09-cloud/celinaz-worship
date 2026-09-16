@@ -158,6 +158,22 @@ export async function getOosItems(date: string): Promise<OosItemWithSongs[]> {
   return [...byId.values()].sort((a, b) => a.position - b.position);
 }
 
+export type OosLogEntry = { date: string; itemCount: number; songCount: number };
+
+export async function getAllOosDates(): Promise<OosLogEntry[]> {
+  const rows = await db
+    .select({
+      date: oosItems.date,
+      itemCount: sql<number>`count(distinct ${oosItems.id})`.mapWith(Number),
+      songCount: sql<number>`count(${oosItemSongs.id})`.mapWith(Number),
+    })
+    .from(oosItems)
+    .leftJoin(oosItemSongs, eq(oosItemSongs.oosItemId, oosItems.id))
+    .groupBy(oosItems.date)
+    .orderBy(desc(oosItems.date));
+  return rows;
+}
+
 export async function findLastOosDateBefore(date: string): Promise<string | null> {
   const rows = await db
     .selectDistinct({ date: oosItems.date })

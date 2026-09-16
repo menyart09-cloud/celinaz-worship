@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   getAllServices,
   getOosItems,
@@ -43,7 +44,13 @@ export default async function OrderOfServicePage({
             Sunday&apos;s songs straight from the Service Log instead of retyping them.
           </p>
         </div>
-        <div className="no-print">
+        <div className="no-print flex items-center gap-2">
+          <Link
+            href="/order-of-service/log"
+            className="rounded-full border border-border-strong bg-surface px-3 py-1.5 text-sm font-semibold text-text-muted hover:border-accent"
+          >
+            History
+          </Link>
           <DateSwitcher date={date} />
         </div>
       </div>

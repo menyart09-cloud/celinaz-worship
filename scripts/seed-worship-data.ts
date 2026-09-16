@@ -30,7 +30,9 @@ function sourceForHymn(hymn: string): "hymnal" | "chorus" {
 
 async function main() {
   const { db } = await import("../src/db");
-  const { songs, services, serviceSongs, assigneeNames } = await import("../src/db/schema");
+  const { songs, services, serviceSongs, assigneeNames, shortlistItems } = await import(
+    "../src/db/schema"
+  );
 
   const servicesData: SeedService[] = JSON.parse(
     readFileSync(path.join(__dirname, "services_seed_data.json"), "utf8"),
@@ -115,9 +117,23 @@ async function main() {
     if (!existing) await db.insert(assigneeNames).values({ name });
   }
 
+  // The "Songs To Use" sheet is the owner's shortlist of songs to consider —
+  // distinct from the Song Library, which reflects actual usage history.
+  const shortlistCandidates = catalogData.filter((c) => c.sheet === "Music - Songs To Use");
+  console.log(`Seeding shortlist from "Songs To Use" (${shortlistCandidates.length} entries)...`);
+  let shortlistAdded = 0;
+  for (const entry of shortlistCandidates) {
+    const title = entry.title.trim();
+    const existing = await db.query.shortlistItems.findFirst({ where: eq(shortlistItems.title, title) });
+    if (!existing) {
+      await db.insert(shortlistItems).values({ hymnNumber: entry.hymn?.trim() || "Comp", title });
+      shortlistAdded++;
+    }
+  }
+
   console.log(
     `Done. ${servicesCreated} services created, ${songsLinked} service-song links, ` +
-      `${songIdByKey.size} distinct songs in the library.`,
+      `${songIdByKey.size} distinct songs in the library, ${shortlistAdded} shortlist items added.`,
   );
 }
 

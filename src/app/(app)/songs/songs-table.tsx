@@ -5,7 +5,7 @@ import { isoToMdy } from "@/lib/dates";
 import { HymnBadge, SongChip } from "../_components/song-chip";
 import type { SongLibraryRow } from "@/lib/queries";
 
-type SortKey = "hymn" | "title" | "uses";
+type SortKey = "hymn" | "title" | "source" | "uses";
 type Sort = { key: SortKey; dir: 1 | -1 };
 
 function Th({
@@ -25,7 +25,7 @@ function Th({
   return (
     <th
       style={width ? { width } : undefined}
-      className="sticky top-0 border-b border-border bg-surface-sunk p-0 text-left"
+      className="sticky top-0 z-10 border-b border-border bg-surface-sunk p-0 text-left"
     >
       {sortKey ? (
         <button
@@ -64,6 +64,9 @@ export function SongsTable({ songs }: { songs: SongLibraryRow[] }) {
       } else if (sort.key === "uses") {
         av = a.useCount;
         bv = b.useCount;
+      } else if (sort.key === "source") {
+        av = a.source;
+        bv = b.source;
       } else {
         av = a.title.toLowerCase();
         bv = b.title.toLowerCase();
@@ -87,25 +90,25 @@ export function SongsTable({ songs }: { songs: SongLibraryRow[] }) {
         className="mb-3.5 w-full rounded-lg border border-border-strong bg-surface px-3.5 py-2.5 text-sm sm:max-w-xs"
       />
       <div className="max-h-[560px] overflow-auto rounded-xl border border-border">
-        <table className="w-full border-collapse text-sm">
+        <table className="w-full border-separate border-spacing-0 text-sm">
           <thead>
             <tr>
               <Th label="Hymn #" sortKey="hymn" width="80px" sort={sort} onToggle={toggleSort} />
               <Th label="Title" sortKey="title" sort={sort} onToggle={toggleSort} />
-              <Th label="Source" width="90px" sort={sort} onToggle={toggleSort} />
+              <Th label="Source" sortKey="source" width="90px" sort={sort} onToggle={toggleSort} />
               <Th label="Usage" sortKey="uses" width="170px" sort={sort} onToggle={toggleSort} />
             </tr>
           </thead>
           <tbody>
             {rows.map((s) => (
-              <tr key={s.id} className="border-t border-border hover:bg-surface-alt">
-                <td className="px-3.5 py-2.5">
+              <tr key={s.id} className="hover:bg-surface-alt">
+                <td className="border-t border-border px-3.5 py-2.5">
                   <HymnBadge hymnNumber={s.hymnNumber} />
                 </td>
-                <td className="px-3.5 py-2.5">
+                <td className="border-t border-border px-3.5 py-2.5">
                   <SongChip hymnNumber={s.hymnNumber} title={s.title} hideBadge />
                 </td>
-                <td className="px-3.5 py-2.5">
+                <td className="border-t border-border px-3.5 py-2.5">
                   <span
                     className={
                       "rounded-full px-2 py-0.5 text-xs font-bold uppercase " +
@@ -117,7 +120,7 @@ export function SongsTable({ songs }: { songs: SongLibraryRow[] }) {
                     {s.source === "hymnal" ? "Hymnal" : "Chorus"}
                   </span>
                 </td>
-                <td className="px-3.5 py-2.5 text-sm text-text-muted">
+                <td className="border-t border-border px-3.5 py-2.5 text-sm text-text-muted">
                   {s.useCount > 0 ? (
                     <>
                       {s.useCount} {s.useCount === 1 ? "use" : "uses"} · last{" "}
