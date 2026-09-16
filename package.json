@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "drizzle-kit migrate && tsx scripts/seed-worship-data.ts && tsx scripts/seed-admin.ts && next build",
+    "build": "drizzle-kit migrate && tsx scripts/seed-worship-data.ts && tsx scripts/seed-oos-history.ts && tsx scripts/seed-admin.ts && next build",
     "start": "next start",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "seed:admin": "tsx scripts/seed-admin.ts",
-    "seed:worship-data": "tsx scripts/seed-worship-data.ts"
+    "seed:worship-data": "tsx scripts/seed-worship-data.ts",
+    "seed:oos-history": "tsx scripts/seed-oos-history.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

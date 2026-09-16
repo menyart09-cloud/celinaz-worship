@@ -1,0 +1,2147 @@
+[
+ {
+  "date": "1-4-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Announcement slides before service; Ron plays piano",
+    "songs": []
+   },
+   {
+    "label": "Countdown",
+    "assignee": "Ron",
+    "detail": "10:25 start countdown timer, keep playing",
+    "songs": []
+   },
+   {
+    "label": "Opening Welcome",
+    "assignee": "Mark",
+    "detail": "Ron play softly during welcome, louder during greeting",
+    "songs": []
+   },
+   {
+    "label": "Greeting Time",
+    "assignee": null,
+    "detail": "Ron continue playing",
+    "songs": []
+   },
+   {
+    "label": "Opening Prayer",
+    "assignee": "Mark",
+    "detail": "Ron play very softly",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": "Mark and Praise Team",
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "694",
+      "title": "Jesus Saves"
+     },
+     {
+      "hymn": "505",
+      "title": "Glorious Freedom"
+     },
+     {
+      "hymn": "84",
+      "title": "Grace Greater Than Our Sin"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": "Start praying right when the song ends, no down time",
+    "songs": []
+   },
+   {
+    "label": "Introduce Jeff",
+    "assignee": "Phil",
+    "detail": "Brief intro, Jeff takes it from there",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Jeff Stark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Close Service",
+    "assignee": null,
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "1-11-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Open Service",
+    "assignee": "Mark",
+    "detail": "Welcome and brief prayer",
+    "songs": []
+   },
+   {
+    "label": "Greet",
+    "assignee": null,
+    "detail": "Ron play during greeting time",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": "Deuteronomy 4:7 video; mention Wed prayer meeting; invite to altar; repeat last chorus softer",
+    "songs": [
+     {
+      "hymn": "36",
+      "title": "To God Be the Glory"
+     },
+     {
+      "hymn": "719",
+      "title": "Revive Us Again"
+     },
+     {
+      "hymn": "107",
+      "title": "God Will Take Care of You"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": "Start praying right when chorus ends, no announcing needs; Kevin Cramer starts Pass the Hat; turn service to Jeff",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Jeff Stark",
+    "detail": "Deuteronomy 4:7",
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "1-18-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Open Service",
+    "assignee": "Mark",
+    "detail": "Welcome and brief prayer",
+    "songs": []
+   },
+   {
+    "label": "Greet",
+    "assignee": null,
+    "detail": "Ron play during greeting time",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": "Mention Wed prayer meeting; tag: On Christ the Solid Rock I Stand",
+    "songs": [
+     {
+      "hymn": "395",
+      "title": "Love Lifted Me"
+     },
+     {
+      "hymn": "383",
+      "title": "Satisfied"
+     },
+     {
+      "hymn": "Comp",
+      "title": "In Christ Alone"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": "Start praying when In Christ Alone ends; turn service to Jeff",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Jeff Stark",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "2-1-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Open Service",
+    "assignee": "Mark",
+    "detail": "Welcome, Lady's Appreciation Banquet, brief prayer",
+    "songs": []
+   },
+   {
+    "label": "Greet",
+    "assignee": null,
+    "detail": "Ron play during greeting time",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": "Communion served by Jeff during Sweet Sweet Spirit, Ron play softly",
+    "songs": [
+     {
+      "hymn": "352",
+      "title": "Victory In Jesus"
+     },
+     {
+      "hymn": "304",
+      "title": "Sweet Sweet Spirit"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Goodness Of God"
+     },
+     {
+      "hymn": "297",
+      "title": "Spirit Of The Living God"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": "Start praying when Spirit of the Living God ends; start Pass the Hat; turn service to Jeff",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Jeff Stark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Altar Call",
+    "assignee": null,
+    "detail": "Ron play softly",
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "2-8-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Open Service",
+    "assignee": "Mark",
+    "detail": "Welcome; Lady's Appreciation Banquet Mar 21 (need volunteers); Chili Cook Off Feb 21 @5 Sat; brief prayer",
+    "songs": []
+   },
+   {
+    "label": "Greet",
+    "assignee": null,
+    "detail": "Ron play during greeting time",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "36",
+      "title": "To God Be the Glory"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Little Is Much When God Is In It"
+     },
+     {
+      "hymn": "456",
+      "title": "I'd Rather Have Jesus"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": "Turn service over to Jeff",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Jeff Stark",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "2-15-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Call to Stillness",
+    "assignee": null,
+    "detail": "Begin by being still and quiet before the Lord, don't be afraid of silence",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": "Tom: if open altar, use End slide of I Surrender All",
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Agnus Dei"
+     },
+     {
+      "hymn": "560",
+      "title": "Tis So Sweet to Trust in Jesus"
+     },
+     {
+      "hymn": "489",
+      "title": "Where He Leads Me"
+     },
+     {
+      "hymn": "486",
+      "title": "I Surrender All"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": null,
+    "detail": "TBD by Holy Spirit",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Jeff Stark",
+    "detail": "Romans 12:1; Ephesians 5:19-20",
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "2-22-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Announcements",
+    "assignee": "Mark",
+    "detail": "Alabaster boxes due after service; Baby Bottles for Choosing Life Pregnancy Center, return end of March",
+    "songs": []
+   },
+   {
+    "label": "Pass the Hat Report",
+    "assignee": "Jeannie Enyart",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Mark",
+    "detail": "Short prayer",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Open the Eyes of My Heart"
+     },
+     {
+      "hymn": "554",
+      "title": "It is Well With My Soul"
+     },
+     {
+      "hymn": "469",
+      "title": "I Will Serve Thee"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": "Watch Mark, be ready to pray",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Jeff Stark",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "3-1-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Announcements",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Greet",
+    "assignee": null,
+    "detail": "Ron play piano",
+    "songs": []
+   },
+   {
+    "label": "Brief Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "650",
+      "title": "When We All Get to Heaven"
+     },
+     {
+      "hymn": "420",
+      "title": "Since Jesus Came Into My Heart"
+     },
+     {
+      "hymn": "Comp",
+      "title": "You Are My King"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Jeff Stark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Communion",
+    "assignee": "Jeff",
+    "detail": "Phil & Jane Miller servers",
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "3-8-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Announcements",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Greet",
+    "assignee": null,
+    "detail": "Ron play piano",
+    "songs": []
+   },
+   {
+    "label": "Brief Prayer",
+    "assignee": "Mark",
+    "detail": "Scripture",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": "Intro: think of promises of God; what are God's promises that help you? what's your favorite?",
+    "songs": [
+     {
+      "hymn": "601",
+      "title": "Constantly Abinding"
+     },
+     {
+      "hymn": "687",
+      "title": "Standing on the Promises"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Trust In God"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Jeff Stark",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "3-29-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Announcements",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Greet",
+    "assignee": null,
+    "detail": "Ron play piano; children come up and prepare for song; children sing; Tom mute mics; Mark move mics/pulpit as children leave",
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": null,
+    "detail": "Psalm 84",
+    "songs": []
+   },
+   {
+    "label": "Brief Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "236",
+      "title": "At Calvary"
+     },
+     {
+      "hymn": "233",
+      "title": "The Old Rugged Cross"
+     },
+     {
+      "hymn": "Comp",
+      "title": "At the Cross (Love Ran Red)"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Dr Brohemoth",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "4-5-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Opening Song",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "260",
+      "title": "Christ the Lord Is Risen Today"
+     }
+    ]
+   },
+   {
+    "label": "Welcome & Greet",
+    "assignee": null,
+    "detail": "Ron play piano",
+    "songs": []
+   },
+   {
+    "label": "Scripture Reading",
+    "assignee": "Mark",
+    "detail": "Isaiah 42:1-9, Prophecy of Jesus",
+    "songs": []
+   },
+   {
+    "label": "Praise Team Reading",
+    "assignee": null,
+    "detail": "The Resurrection, Matthew 28:1-8a",
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "258",
+      "title": "Christ Arose"
+     },
+     {
+      "hymn": "262",
+      "title": "He Lives"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Made for More"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Dr Jeff",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Communion",
+    "assignee": null,
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "4-12-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Pass the Hat",
+    "assignee": null,
+    "detail": "Alice Jackson, Jordi Vanover",
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": null,
+    "detail": "Exodus 24",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "453",
+      "title": "Nothing But the Blood"
+     },
+     {
+      "hymn": "442",
+      "title": "Blessed Assurance"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Glorious Day (Living He Loved Me)"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Skinny Guy",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "4-19-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": null,
+    "detail": "Elections next Sunday",
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": null,
+    "detail": "Psalm 23",
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "596",
+      "title": "Leaning on the Everlasting Arms"
+     },
+     {
+      "hymn": "Comp",
+      "title": "He Set Me Free"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Jesus Messiah"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Pass the Hat",
+    "assignee": null,
+    "detail": "Report; Jordi Vanover",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Altar Song",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "221",
+      "title": "Calvary Covers It All"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "date": "4-26-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Greet",
+    "assignee": null,
+    "detail": "Ron play piano",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": null,
+    "detail": "Start Pass the Hat; Election Sunday",
+    "songs": []
+   },
+   {
+    "label": "Scripture & Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": "Mark reads scripture between songs 1 and 2",
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Lord I Lift Your Name On High"
+     },
+     {
+      "hymn": "Comp",
+      "title": "How Great is Our God"
+     },
+     {
+      "hymn": "72",
+      "title": "I Exalt Thee"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Delta Force",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "5-3-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": null,
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Holy Holy Holy Savior and King"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Revelation Song"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": null,
+    "detail": "Phil, just start praying",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Sarge",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Communion",
+    "assignee": null,
+    "detail": "Servers: Bennie Evans, Jeannie Enyart",
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "5-10-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Ron play piano; announcements slides",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": "Special gift for all ladies after service at the doors",
+    "songs": []
+   },
+   {
+    "label": "Children's Special",
+    "assignee": "Mark",
+    "detail": "Children sing special; Praise Team go up; Mark move pulpit back",
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": "Diane",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Brief Prayer",
+    "assignee": "Diane",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": "One Day: scripture read partway through, lower volume; let ending play out",
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Learning To Lean"
+     },
+     {
+      "hymn": "Comp",
+      "title": "One Day"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": "Introduce Jeff Fionita after",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Chief",
+    "detail": "End service however you choose",
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "5-17-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Announcement slides before service; Ron play",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Scripture for the Grads",
+    "assignee": "Mark",
+    "detail": "Jeremiah 29:11",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": "Mark & Praise Team",
+    "detail": "Tell grads: made for a purpose / He is a Waymaker and Miracle worker",
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Made for More"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Waymaker"
+     }
+    ]
+   },
+   {
+    "label": "Call Grads Up Front",
+    "assignee": null,
+    "detail": "Ron play about a minute",
+    "songs": []
+   },
+   {
+    "label": "Recognition of Seniors",
+    "assignee": "Mark & Bertie",
+    "detail": "Gifts; Zach Cramer, Ari Enyart, Gavin Wagner, Kyla Wagner, Blake Jackson, Kalista Danylchuk",
+    "songs": []
+   },
+   {
+    "label": "Prayer & Commissioning of Grads",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Professor Stark",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "5-24-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Announcement slides before service; Ron play",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Memorial Day Video",
+    "assignee": null,
+    "detail": "'Remember' slide",
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": "Mark",
+    "detail": "Use transition and scripture",
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "We Will Remember"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Amazing Grace (My Chains Are Gone)"
+     },
+     {
+      "hymn": "223",
+      "title": "O How He Loves You and Me"
+     }
+    ]
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "The Jeff",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "5-31-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Announcements slides before service; Ron play",
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "God So Loved"
+     },
+     {
+      "hymn": "352",
+      "title": "Victory In Jesus"
+     },
+     {
+      "hymn": "149",
+      "title": "His Name Is Wonderful"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Mark",
+    "detail": "Start Pass the Hat",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Sir Jeff",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Communion",
+    "assignee": "Jeff",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "6-7-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Pre-service slides; Ron play",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Opening Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Honey In the Rock"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Open the Eyes of My Heart"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Make Room"
+     }
+    ]
+   },
+   {
+    "label": "Congregational Prayer",
+    "assignee": "Mark",
+    "detail": "No piano",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Big Guy",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "6-14-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Opening slides; countdown timer",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Opening Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": null,
+    "detail": "Psalm 113",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Blessed Be Your Name"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Worthy Of Praise"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Worthy Is the Lamb"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Larry",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Pastor Britni Dooley",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "6-21-26",
+  "items": [
+   {
+    "label": "Opening Slides",
+    "assignee": null,
+    "detail": "Countdown timer; Ron play",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": null,
+    "detail": "Happy Father's Day!",
+    "songs": []
+   },
+   {
+    "label": "Children Sing",
+    "assignee": null,
+    "detail": "Computer",
+    "songs": []
+   },
+   {
+    "label": "Greet",
+    "assignee": null,
+    "detail": "Ron play",
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Mark",
+    "detail": "Ron play softly",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Be Thou My Vision"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Good Good Father"
+     },
+     {
+      "hymn": "50",
+      "title": "God Is So Good"
+     }
+    ]
+   },
+   {
+    "label": "Message",
+    "assignee": "Jeff",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "6-28-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": "Ron",
+    "detail": "Announcement Slides; Countdown Timer",
+    "songs": []
+   },
+   {
+    "label": "Greet",
+    "assignee": "Ron",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Scripture & Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Letter from Pastor Jeff & Carol",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": "Only 2 slides with multiple songs on each",
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Blood Medley"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Come Now Is the Time to Worship"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Come Fount of Many Blessings"
+     }
+    ]
+   },
+   {
+    "label": "Phil's Segment",
+    "assignee": "Phil",
+    "detail": "Prayer; Pass the Hat; Mission Awards",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Reverend Pastor Dr Professor Jeff Stark",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "7-5-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Announcement slides; countdown; Ron play",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": "Pastor Jeff & Carol have a contract on a house",
+    "songs": []
+   },
+   {
+    "label": "Reading",
+    "assignee": null,
+    "detail": "Reading about the 4th of July",
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": null,
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": null,
+    "detail": "Prayer slide",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "756",
+      "title": "Mine Eyes Have Seen the Glory"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Death Was Arrested"
+     },
+     {
+      "hymn": "122",
+      "title": "Majesty"
+     }
+    ]
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Pastor Kristi Payne",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "7-12-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Announcement slides; countdown; Ron play",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Diane",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Opening Prayer",
+    "assignee": "Diane",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": "Diane & Praise Team",
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "572",
+      "title": "He Hideth My Soul"
+     },
+     {
+      "hymn": "521",
+      "title": "This Is Like Heaven To Me"
+     },
+     {
+      "hymn": "327",
+      "title": "Turn your Eyes Upon Jesus"
+     }
+    ]
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "7-19-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": "Ron",
+    "detail": "Announcements Slides; Countdown Slide",
+    "songs": []
+   },
+   {
+    "label": "Opening Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Announcements",
+    "assignee": "Mark",
+    "detail": "Camp Meeting starts tonight; Campground Open House Aug 1 Saturday",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Hosanna"
+     },
+     {
+      "hymn": "650",
+      "title": "When We All Get to Heaven"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Shout to the Lord"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Distinguished Service Award",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Sergeant Stark",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "7-26-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": "Ron",
+    "detail": "Announcements Slides; Countdown",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Greet",
+    "assignee": null,
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "I Thank God"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Lord I Lift Your Name On High"
+     },
+     {
+      "hymn": "148",
+      "title": "There\u2019s Something About That Name"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Paula Monnin",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "8-2-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": "Ron",
+    "detail": "Slides: Announcements, Countdown",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": "For God So Loved can get loud in spots; Jesus Messiah volume is hot",
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "For God So Loved"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Jesus Messiah"
+     },
+     {
+      "hymn": "149",
+      "title": "His Name Is Wonderful"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Farmer Stark",
+    "detail": "Communion servers: Karla & Kenzie",
+    "songs": []
+   },
+   {
+    "label": "Gift for Jeff & Angie",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "8-9-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": "Ron",
+    "detail": "Announcements Slides; Countdown",
+    "songs": []
+   },
+   {
+    "label": "Welcome, Greet, Scripture, Prayer",
+    "assignee": "Mark",
+    "detail": "Psalm 150",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Made for More"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Waymaker"
+     },
+     {
+      "hymn": "437",
+      "title": "Trust and Obey"
+     }
+    ]
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Phil",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Pastor Chief",
+    "detail": "Andy Monnin",
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "8-16-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": "Ron",
+    "detail": "Announcements slides; Countdown",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Greet",
+    "assignee": null,
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": null,
+    "detail": "Psalm 145:1-10",
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": null,
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": "Praise Team",
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "You\u2019re Worthy Of My Praise"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Blessed Be Your Name"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Worthy Is the Lamb"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Pastor",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Pastor",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "8-23-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": null,
+    "detail": "Announcement Slides; Countdown",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": null,
+    "detail": "Psalm 145:11-21 (Zach Kremer)",
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Children",
+    "assignee": "Angela & Kris",
+    "detail": "Song; Promotion",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": "Praise Team",
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Amazing Grace (My Chains Are Gone)"
+     },
+     {
+      "hymn": "Comp",
+      "title": "In Christ Alone"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Pastor Jeff",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Big Guy",
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "8-30-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": "Ron",
+    "detail": "Announcements slides; Countdown timer",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": null,
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Blood Medley"
+     },
+     {
+      "hymn": "Comp",
+      "title": "You Are My King"
+     },
+     {
+      "hymn": "489",
+      "title": "Where He Leads Me"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Pastor",
+    "detail": "Pass the Hat going for Parker Wynk",
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Big Dog",
+    "detail": "Acts 2:42-47; Acts 1:8; John 17:20-21",
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "9-6-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": "Ron",
+    "detail": "Announcement slide; Countdown",
+    "songs": []
+   },
+   {
+    "label": "Welcome",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": null,
+    "detail": "Psalm 8",
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Lord I Lift Your Name On High"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Goodness Of God"
+     },
+     {
+      "hymn": "Comp",
+      "title": "Change My Heart Oh God"
+     }
+    ]
+   },
+   {
+    "label": "Congregation Prayer",
+    "assignee": "Pastor",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Demon Slayer",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Communion",
+    "assignee": null,
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Prayer",
+    "assignee": null,
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Dismiss",
+    "assignee": null,
+    "detail": null,
+    "songs": []
+   }
+  ]
+ },
+ {
+  "date": "9-13-26",
+  "items": [
+   {
+    "label": "Pre-Service",
+    "assignee": "Ron",
+    "detail": "Announcements slides; Countdown",
+    "songs": []
+   },
+   {
+    "label": "Call to Worship",
+    "assignee": "Mark",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Opening Song",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Hosanna"
+     }
+    ]
+   },
+   {
+    "label": "Greet",
+    "assignee": null,
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Welcome & Announcements",
+    "assignee": "Pastor",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Children Dismissed",
+    "assignee": "Pastor",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Scripture",
+    "assignee": "Mark",
+    "detail": "Psalm 19:7-10, 14",
+    "songs": []
+   },
+   {
+    "label": "Worship",
+    "assignee": null,
+    "detail": null,
+    "songs": [
+     {
+      "hymn": "Comp",
+      "title": "Glorious Day (Living He Loved Me)"
+     },
+     {
+      "hymn": "149",
+      "title": "His Name Is Wonderful"
+     }
+    ]
+   },
+   {
+    "label": "Pastoral Prayer",
+    "assignee": "Pastor",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Message",
+    "assignee": "Stud Muffin",
+    "detail": null,
+    "songs": []
+   },
+   {
+    "label": "Dismissal",
+    "assignee": null,
+    "detail": null,
+    "songs": []
+   }
+  ]
+ }
+]
