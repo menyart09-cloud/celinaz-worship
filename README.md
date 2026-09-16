@@ -2,7 +2,7 @@
 
 A worship-services web app for Celinaz — fully independent from `celinaz-attendance` (own repo, own database, own deployment).
 
-## Status: built, not yet deployed
+## Status: live at https://celinaz-worship.vercel.app
 
 Stack: Next.js 16 (App Router), React 19, Tailwind v4, NextAuth v5 (credentials + JWT sessions), Drizzle ORM + Neon Postgres, deployed on Vercel. Font is Comic Neue (a cleaned-up Comic Sans) per the owner's request.
 
@@ -12,7 +12,7 @@ Built from the owner's real Mac Numbers spreadsheet and Mac Notes order-of-servi
 
 - **Service Log** (`/log`) — every Sunday, oldest to newest, with inline editing per row.
 - **Add Service** (`/add-service`) — a Sundays-only calendar picker, song autocomplete from the library.
-- **Order of Service** (`/order-of-service`) — an editable run-sheet template per date: reorder/insert/remove items, an assignee field with addable/removable quick-pick pills, "start from last week" (copies structure, clears songs), "pull songs from Service Log," and a working Print view.
+- **Order of Service** (`/order-of-service`) — an editable run-sheet template per date: reorder/insert/remove items, an assignee field with addable/removable quick-pick pills, "start from last week" (copies structure, clears songs), "pull songs from Service Log," and a working Print view. Every saved date is browsable from **History** (`/order-of-service/log`).
 - **Search** (`/search`) — by title, hymn #, or date, with "also played that Sunday" cross-references.
 - **Song Library** (`/songs`) — every hymn/chorus ever used, sortable, with usage counts.
 - **Shortlist** (`/shortlist`) — songs under consideration, not yet in the log.
