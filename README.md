@@ -4,7 +4,7 @@ A worship-services web app for Celinaz — fully independent from `celinaz-atten
 
 ## Status: live at https://celinaz-worship.vercel.app
 
-Stack: Next.js 16 (App Router), React 19, Tailwind v4, NextAuth v5 (credentials + JWT sessions), Drizzle ORM + Neon Postgres, deployed on Vercel. Font is Comic Neue (a cleaned-up Comic Sans) per the owner's request.
+Stack: Next.js 16 (App Router), React 19, Tailwind v4, NextAuth v5 (credentials + JWT sessions), Drizzle ORM + Neon Postgres, deployed on Vercel. Font is Apple's Noteworthy on Mac/iOS (where it's installed system-wide), falling back to Comic Neue elsewhere — Noteworthy isn't licensed for web embedding, so it can only be requested, not bundled.
 
 ## What it does
 
