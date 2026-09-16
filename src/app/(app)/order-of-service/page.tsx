@@ -36,7 +36,7 @@ export default async function OrderOfServicePage({
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+      <div className="no-print mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold">Order of Service</h2>
           <p className="mt-0.5 text-sm text-text-muted">
@@ -54,7 +54,6 @@ export default async function OrderOfServicePage({
           </Link>
         </div>
       </div>
-      <p className="print:block mb-4 hidden text-sm font-semibold">{date}</p>
 
       <OosEditor
         date={date}
