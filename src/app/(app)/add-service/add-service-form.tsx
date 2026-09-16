@@ -64,25 +64,28 @@ export function AddServiceForm() {
         <h3 className="mb-2 text-sm font-bold">Setlist</h3>
         <div className="flex flex-col gap-2">
           {songs.map((s, i) => (
-            <div key={i} className="grid grid-cols-[74px_1fr_110px_32px] items-center gap-2">
+            <div
+              key={i}
+              className="grid grid-cols-[56px_minmax(0,1fr)_64px_28px] items-center gap-1.5 sm:grid-cols-[74px_minmax(0,1fr)_110px_32px] sm:gap-2"
+            >
               <input
                 value={s.hymnNumber}
                 onChange={(e) => updateSong(i, "hymnNumber", e.target.value)}
                 placeholder="#"
-                className="font-mono-tab rounded-md border border-border-strong bg-surface px-2 py-1.5 text-center text-sm"
+                className="font-mono-tab min-w-0 rounded-md border border-border-strong bg-surface px-2 py-1.5 text-center text-sm"
               />
               <input
                 value={s.title}
                 onChange={(e) => updateSong(i, "title", e.target.value)}
                 placeholder="Song title"
                 list="song-title-options"
-                className="rounded-md border border-border-strong bg-surface px-2 py-1.5 text-sm"
+                className="min-w-0 rounded-md border border-border-strong bg-surface px-2 py-1.5 text-sm"
               />
               <input
                 value={s.verses}
                 onChange={(e) => updateSong(i, "verses", e.target.value)}
                 placeholder="verses"
-                className="rounded-md border border-border-strong bg-surface px-2 py-1.5 text-sm"
+                className="min-w-0 rounded-md border border-border-strong bg-surface px-2 py-1.5 text-sm"
               />
               <button
                 type="button"
