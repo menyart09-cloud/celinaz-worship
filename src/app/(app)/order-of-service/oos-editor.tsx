@@ -287,11 +287,11 @@ function PrintItem({ item }: { item: OosItemWithSongs }) {
   }
 
   return (
-    <div className="mb-5">
-      <p className="text-lg">{headLine}</p>
-      {item.detail && <p className="pl-4 text-lg before:mr-1.5 before:content-['•']">{item.detail}</p>}
+    <div className="mb-3">
+      <p className="text-base">{headLine}</p>
+      {item.detail && <p className="pl-4 text-base before:mr-1.5 before:content-['•']">{item.detail}</p>}
       {listSongs.map((s, i) => (
-        <p key={s.linkId} className="pl-4 text-lg">
+        <p key={s.linkId} className="pl-4 text-base">
           {i + 1}. {s.title} {songTag(s.hymnNumber)}
         </p>
       ))}
@@ -302,9 +302,9 @@ function PrintItem({ item }: { item: OosItemWithSongs }) {
 function PrintView({ date, items }: { date: string; items: OosItemWithSongs[] }) {
   return (
     <div className="mx-auto max-w-2xl">
-      <p className="mb-6 text-xl font-bold">{isoToMdy(date)} Order of Service</p>
+      <p className="mb-4 text-lg font-bold">{isoToMdy(date)} Order of Service</p>
       {items.length === 0 ? (
-        <p className="text-lg text-text-faint italic">Nothing here yet.</p>
+        <p className="text-base text-text-faint italic">Nothing here yet.</p>
       ) : (
         items.map((item) => <PrintItem key={item.id} item={item} />)
       )}
