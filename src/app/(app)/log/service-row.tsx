@@ -41,7 +41,7 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
   return (
     <div
       className={
-        "grid grid-cols-[100px_1.15fr_1.5fr] border-t border-border first:border-t-0 " +
+        "grid grid-cols-[100px_minmax(0,1.15fr)_minmax(0,1.5fr)] border-t border-border first:border-t-0 " +
         (editing ? "bg-accent-soft" : isNoSongsNote ? "bg-warn-soft" : "")
       }
     >
@@ -57,7 +57,7 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
           onClick={editing ? undefined : startEdit}
           aria-label={editing ? "Editing" : "Edit this service"}
           className={
-            "flex h-[22px] w-[22px] flex-none items-center justify-center rounded border text-xs " +
+            "flex h-7 w-7 flex-none items-center justify-center rounded border text-xs " +
             (editing
               ? "border-accent bg-accent-soft text-accent-strong"
               : "border-border-strong text-text-faint hover:border-accent hover:text-accent-strong")
@@ -107,31 +107,31 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
         {editing ? (
           <div className="flex flex-col gap-2">
             {songs.map((s, i) => (
-              <div key={i} className="grid grid-cols-[60px_1fr_70px_26px] items-center gap-2">
+              <div key={i} className="flex flex-wrap items-center gap-1.5">
                 <input
                   value={s.hymnNumber}
                   onChange={(e) => updateSong(i, "hymnNumber", e.target.value)}
                   placeholder="#"
-                  className="font-mono-tab rounded-md border border-border-strong bg-surface px-2 py-1 text-center text-sm"
+                  className="font-mono-tab w-14 flex-none rounded-md border border-border-strong bg-surface px-2 py-1 text-center text-sm"
                 />
                 <input
                   value={s.title}
                   onChange={(e) => updateSong(i, "title", e.target.value)}
                   placeholder="Song title"
                   list="song-title-options"
-                  className="rounded-md border border-border-strong bg-surface px-2 py-1 text-sm"
+                  className="min-w-[110px] flex-1 rounded-md border border-border-strong bg-surface px-2 py-1 text-sm"
                 />
                 <input
                   value={s.verses}
                   onChange={(e) => updateSong(i, "verses", e.target.value)}
                   placeholder="verses"
-                  className="rounded-md border border-border-strong bg-surface px-2 py-1 text-sm"
+                  className="w-16 flex-none rounded-md border border-border-strong bg-surface px-2 py-1 text-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setSongs((prev) => prev.filter((_, idx) => idx !== i))}
                   aria-label="Remove song"
-                  className="flex h-7 w-7 items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent"
+                  className="flex h-9 w-9 flex-none items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent"
                 >
                   ✕
                 </button>

@@ -31,7 +31,7 @@ export default async function LogPage() {
         ))}
       </datalist>
 
-      <div className="sticky top-[92px] z-20 grid grid-cols-[100px_1.15fr_1.5fr] rounded-t-lg border border-border bg-surface-sunk text-xs font-bold tracking-wide text-text-muted uppercase">
+      <div className="sticky top-[92px] z-20 grid grid-cols-[100px_minmax(0,1.15fr)_minmax(0,1.5fr)] rounded-t-lg border border-border bg-surface-sunk text-xs font-bold tracking-wide text-text-muted uppercase">
         <div className="p-2.5">Date</div>
         <div className="border-l border-border p-2.5">Sermon &amp; Scripture</div>
         <div className="border-l border-border p-2.5">Setlist</div>

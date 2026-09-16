@@ -84,7 +84,7 @@ export function SundayDatePicker({
             <button
               type="button"
               onClick={() => nav(-1)}
-              className="flex h-6 w-6 items-center justify-center rounded border border-border-strong text-text-muted hover:border-accent hover:text-accent-strong"
+              className="flex h-8 w-8 items-center justify-center rounded border border-border-strong text-text-muted hover:border-accent hover:text-accent-strong"
             >
               ‹
             </button>
@@ -92,7 +92,7 @@ export function SundayDatePicker({
             <button
               type="button"
               onClick={() => nav(1)}
-              className="flex h-6 w-6 items-center justify-center rounded border border-border-strong text-text-muted hover:border-accent hover:text-accent-strong"
+              className="flex h-8 w-8 items-center justify-center rounded border border-border-strong text-text-muted hover:border-accent hover:text-accent-strong"
             >
               ›
             </button>

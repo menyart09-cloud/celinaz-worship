@@ -171,7 +171,7 @@ function OosRow({
           type="button"
           onClick={onAddBelow}
           title="Insert a new item below this one"
-          className="flex h-6 w-6 items-center justify-center rounded-md border border-border-strong text-text-faint hover:border-accent hover:text-accent-strong"
+          className="flex h-9 w-9 items-center justify-center rounded-md border border-border-strong text-text-faint hover:border-accent hover:text-accent-strong"
         >
           +
         </button>
@@ -179,7 +179,7 @@ function OosRow({
           type="button"
           onClick={() => startTransition(() => removeItemAction(item.id))}
           title="Remove this item"
-          className="flex h-6 w-6 items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent"
+          className="flex h-9 w-9 items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent"
         >
           ✕
         </button>
@@ -240,7 +240,7 @@ function OosRow({
           {item.songs.map((s) => (
             <span
               key={s.linkId}
-              className="flex items-center gap-1.5 rounded-lg border border-accent-soft-border bg-accent-soft py-1 pr-1 pl-1.5 text-sm"
+              className="flex items-center gap-1.5 rounded-lg border border-accent-soft-border bg-accent-soft py-1.5 pr-1 pl-1.5 text-sm"
             >
               <span className="font-mono-tab rounded bg-surface px-1.5 py-0.5 text-xs text-text-muted">
                 {s.hymnNumber}
@@ -250,7 +250,7 @@ function OosRow({
                 type="button"
                 aria-label="Remove song"
                 onClick={() => startTransition(() => removeSongFromItemAction(s.linkId))}
-                className="no-print flex h-4 w-4 items-center justify-center rounded text-accent-strong opacity-60 hover:bg-black/10 hover:opacity-100"
+                className="no-print flex h-7 w-7 items-center justify-center rounded text-accent-strong opacity-60 hover:bg-black/10 hover:opacity-100"
               >
                 ✕
               </button>

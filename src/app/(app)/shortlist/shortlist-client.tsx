@@ -54,7 +54,7 @@ export function ShortlistClient({ items }: { items: Item[] }) {
                 type="button"
                 onClick={() => startTransition(() => removeShortlistItemAction(item.id))}
                 aria-label="Remove from shortlist"
-                className="flex h-7 w-7 flex-none items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent"
+                className="flex h-9 w-9 flex-none items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent"
               >
                 ✕
               </button>

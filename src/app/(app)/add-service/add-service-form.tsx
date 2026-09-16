@@ -66,7 +66,7 @@ export function AddServiceForm() {
           {songs.map((s, i) => (
             <div
               key={i}
-              className="grid grid-cols-[56px_minmax(0,1fr)_64px_28px] items-center gap-1.5 sm:grid-cols-[74px_minmax(0,1fr)_110px_32px] sm:gap-2"
+              className="grid grid-cols-[56px_minmax(0,1fr)_64px_36px] items-center gap-1.5 sm:grid-cols-[74px_minmax(0,1fr)_110px_36px] sm:gap-2"
             >
               <input
                 value={s.hymnNumber}
@@ -91,7 +91,7 @@ export function AddServiceForm() {
                 type="button"
                 onClick={() => setSongs((prev) => prev.filter((_, idx) => idx !== i))}
                 aria-label="Remove song"
-                className="flex h-8 w-8 items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent"
+                className="flex h-9 w-9 items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent"
               >
                 ✕
               </button>
