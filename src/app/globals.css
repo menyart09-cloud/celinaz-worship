@@ -79,4 +79,21 @@ body {
   .no-print {
     display: none !important;
   }
+
+  /* The on-screen layout stretches the page to fill the viewport (via
+     min-h-full/flex-1) so a sticky header behaves correctly — but that
+     forces print content to be at least one full page tall even when it's
+     short, leaving the total height sitting right at a page boundary. A
+     tiny scaling change in the print dialog then tips it over and the
+     printer pads out extra blank pages. Print only needs the content's own
+     height. */
+  html,
+  body {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  body {
+    display: block !important;
+  }
 }
