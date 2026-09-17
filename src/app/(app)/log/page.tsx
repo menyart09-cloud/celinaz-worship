@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getAllServices, getSongLibrary } from "@/lib/queries";
-import { ServiceRow } from "./service-row";
+import { ServiceLogList } from "./service-log-list";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +13,8 @@ export default async function LogPage() {
         <div>
           <h2 className="text-lg font-bold">Service Log</h2>
           <p className="mt-0.5 text-sm text-text-muted">
-            Every Sunday, oldest to newest — scroll instead of flipping week to week. Click any
-            song to drop it into an upcoming service.
+            Every Sunday — click Date to flip the order, scroll instead of paging week to week.
+            Click any song to drop it into an upcoming service.
           </p>
         </div>
         <Link
@@ -31,16 +31,7 @@ export default async function LogPage() {
         ))}
       </datalist>
 
-      <div className="sticky top-[92px] z-20 grid grid-cols-[100px_minmax(0,1.15fr)_minmax(0,1.5fr)] rounded-t-lg border border-border bg-surface-sunk text-xs font-bold tracking-wide text-text-muted uppercase">
-        <div className="p-2.5">Date</div>
-        <div className="border-l border-border p-2.5">Sermon &amp; Scripture</div>
-        <div className="border-l border-border p-2.5">Setlist</div>
-      </div>
-      <div className="overflow-hidden rounded-b-lg border border-t-0 border-border">
-        {servicesList.map((service) => (
-          <ServiceRow key={service.id} service={service} />
-        ))}
-      </div>
+      <ServiceLogList servicesList={servicesList} />
     </div>
   );
 }

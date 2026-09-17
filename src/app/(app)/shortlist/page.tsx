@@ -4,7 +4,8 @@ import { ShortlistClient } from "./shortlist-client";
 export const dynamic = "force-dynamic";
 
 export default async function ShortlistPage() {
-  const items = await getShortlist();
+  const rows = await getShortlist();
+  const items = rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }));
 
   return (
     <div>
