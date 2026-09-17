@@ -7,6 +7,7 @@ import { SongPickerButton } from "./song-picker";
 import {
   addItemAction,
   removeItemAction,
+  moveItemAction,
   updateItemFieldAction,
   removeSongFromItemAction,
   addAssigneeNameAction,
@@ -121,6 +122,8 @@ export function OosEditor({
                 assigneeNames={assigneeNames}
                 library={library}
                 onAddBelow={() => addItem(item.id)}
+                canMoveUp={i > 0}
+                canMoveDown={i < items.length - 1}
               />
             ))}
           </div>
@@ -144,12 +147,16 @@ function OosRow({
   assigneeNames,
   library,
   onAddBelow,
+  canMoveUp,
+  canMoveDown,
 }: {
   item: OosItemWithSongs;
   isEven: boolean;
   assigneeNames: string[];
   library: SongLibraryRow[];
   onAddBelow: () => void;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
 }) {
   const [label, setLabel] = useState(item.label);
   const [assignee, setAssignee] = useState(item.assignee ?? "");
@@ -167,6 +174,24 @@ function OosRow({
   return (
     <div className={"flex gap-3 border-t border-border p-4 first:border-t-0 " + (isEven ? "bg-surface-alt" : "")}>
       <div className="no-print flex flex-none flex-col gap-1 pt-0.5">
+        <button
+          type="button"
+          onClick={() => startTransition(() => moveItemAction(item.id, "up"))}
+          disabled={!canMoveUp}
+          title="Move up"
+          className="flex h-9 w-9 items-center justify-center rounded-md border border-border-strong text-text-faint hover:border-accent hover:text-accent-strong disabled:opacity-30 disabled:hover:border-border-strong disabled:hover:text-text-faint"
+        >
+          ↑
+        </button>
+        <button
+          type="button"
+          onClick={() => startTransition(() => moveItemAction(item.id, "down"))}
+          disabled={!canMoveDown}
+          title="Move down"
+          className="flex h-9 w-9 items-center justify-center rounded-md border border-border-strong text-text-faint hover:border-accent hover:text-accent-strong disabled:opacity-30 disabled:hover:border-border-strong disabled:hover:text-text-faint"
+        >
+          ↓
+        </button>
         <button
           type="button"
           onClick={onAddBelow}

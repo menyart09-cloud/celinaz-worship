@@ -52,6 +52,23 @@ export async function removeItemAction(itemId: string) {
   revalidateOos();
 }
 
+// Swaps this item's position with whichever neighbor sits at position ± 1 for
+// the same date — a plain up/down reorder, no drag-and-drop needed.
+export async function moveItemAction(itemId: string, direction: "up" | "down") {
+  const item = await db.query.oosItems.findFirst({ where: eq(oosItems.id, itemId) });
+  if (!item) return;
+
+  const neighborPosition = item.position + (direction === "up" ? -1 : 1);
+  const neighbor = await db.query.oosItems.findFirst({
+    where: and(eq(oosItems.date, item.date), eq(oosItems.position, neighborPosition)),
+  });
+  if (!neighbor) return;
+
+  await db.update(oosItems).set({ position: neighbor.position }).where(eq(oosItems.id, item.id));
+  await db.update(oosItems).set({ position: item.position }).where(eq(oosItems.id, neighbor.id));
+  revalidateOos();
+}
+
 export async function updateItemFieldAction(
   itemId: string,
   field: "label" | "assignee" | "detail",
