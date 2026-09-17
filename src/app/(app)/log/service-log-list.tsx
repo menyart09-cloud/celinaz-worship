@@ -5,7 +5,7 @@ import { ServiceRow } from "./service-row";
 import type { ServiceWithSongs } from "@/lib/queries";
 
 export function ServiceLogList({ servicesList }: { servicesList: ServiceWithSongs[] }) {
-  const [sortDir, setSortDir] = useState<1 | -1>(1);
+  const [sortDir, setSortDir] = useState<1 | -1>(-1);
 
   const sorted = useMemo(
     () =>
