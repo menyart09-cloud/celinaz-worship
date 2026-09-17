@@ -161,10 +161,19 @@ function OosRow({
   const [label, setLabel] = useState(item.label);
   const [assignee, setAssignee] = useState(item.assignee ?? "");
   const [detail, setDetail] = useState(item.detail ?? "");
-  const [, startTransition] = useTransition();
+  const [pending, startTransition] = useTransition();
+  const [justSaved, setJustSaved] = useState(false);
+
+  function commitField(field: "label" | "assignee" | "detail", value: string) {
+    startTransition(async () => {
+      await updateItemFieldAction(item.id, field, value);
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 1500);
+    });
+  }
 
   function commitAssignee(value: string) {
-    startTransition(() => updateItemFieldAction(item.id, "assignee", value));
+    commitField("assignee", value);
     const trimmed = value.trim();
     if (trimmed && !assigneeNames.includes(trimmed)) {
       startTransition(() => addAssigneeNameAction(trimmed));
@@ -215,9 +224,14 @@ function OosRow({
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            onBlur={() => startTransition(() => updateItemFieldAction(item.id, "label", label))}
+            onBlur={() => commitField("label", label)}
             className="min-w-[150px] flex-1 rounded-md border border-transparent px-1 py-0.5 font-bold hover:border-border-strong hover:bg-surface focus:border-border-strong focus:bg-surface focus:outline-none"
           />
+          {(pending || justSaved) && (
+            <span className="no-print text-xs font-semibold text-text-faint">
+              {pending ? "Saving…" : "✓ Saved"}
+            </span>
+          )}
           <div className="flex flex-col items-start gap-1">
             <input
               value={assignee}
@@ -256,7 +270,7 @@ function OosRow({
         <input
           value={detail}
           onChange={(e) => setDetail(e.target.value)}
-          onBlur={() => startTransition(() => updateItemFieldAction(item.id, "detail", detail))}
+          onBlur={() => commitField("detail", detail)}
           placeholder="Scripture reference, a note for the team…"
           className="font-mono-tab w-full rounded-md border border-border-strong bg-surface px-2.5 py-1.5 text-sm"
         />
