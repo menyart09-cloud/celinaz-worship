@@ -20,6 +20,13 @@ export const metadata: Metadata = {
   appleWebApp: {
     title: "Celinaz Worship",
   },
+  icons: {
+    icon: [
+      { url: "/logo-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/logo-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/logo-192.png", sizes: "192x192", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

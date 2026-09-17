@@ -21,5 +21,10 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  // Public static files (icons, manifest) must stay reachable without a
+  // session — iOS fetches the home-screen icon and manifest anonymously,
+  // and a redirect to /sign-in there just breaks the icon silently.
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webmanifest)$).*)",
+  ],
 };
