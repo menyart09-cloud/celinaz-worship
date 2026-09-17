@@ -5,6 +5,7 @@ import {
   serviceSongs,
   songs,
   shortlistItems,
+  chorusItems,
   assigneeNames,
   oosItems,
   oosItemSongs,
@@ -90,6 +91,10 @@ export async function getSongLibrary(): Promise<SongLibraryRow[]> {
 
 export async function getShortlist() {
   return db.select().from(shortlistItems).orderBy(desc(shortlistItems.createdAt));
+}
+
+export async function getChoruses() {
+  return db.select().from(chorusItems).orderBy(desc(chorusItems.createdAt));
 }
 
 export async function getAssigneeNames() {

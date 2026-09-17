@@ -90,6 +90,15 @@ export const shortlistItems = pgTable("shortlist_items", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// The owner's standing "Choruses" list from the spreadsheet — its own page,
+// separate from the Song Library and Shortlist.
+export const chorusItems = pgTable("chorus_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  hymnNumber: text("hymn_number").notNull().default("Comp"),
+  title: text("title").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Order of Service — an editable run-sheet template per date. Not every date
 // with an OOS necessarily has a matching `services` row (or vice versa).
 export const oosItems = pgTable("oos_items", {

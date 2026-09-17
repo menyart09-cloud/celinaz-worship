@@ -30,7 +30,7 @@ function sourceForHymn(hymn: string): "hymnal" | "chorus" {
 
 async function main() {
   const { db } = await import("../src/db");
-  const { songs, services, serviceSongs, assigneeNames, shortlistItems } = await import(
+  const { songs, services, serviceSongs, assigneeNames, shortlistItems, chorusItems } = await import(
     "../src/db/schema"
   );
 
@@ -131,9 +131,24 @@ async function main() {
     }
   }
 
+  // The "Choruses" sheet is the owner's standing chorus list — its own page,
+  // separate from the Song Library and Shortlist.
+  const chorusCandidates = catalogData.filter((c) => c.sheet === "Music - Choruses");
+  console.log(`Seeding choruses from "Choruses" (${chorusCandidates.length} entries)...`);
+  let chorusesAdded = 0;
+  for (const entry of chorusCandidates) {
+    const title = entry.title.trim();
+    const existing = await db.query.chorusItems.findFirst({ where: eq(chorusItems.title, title) });
+    if (!existing) {
+      await db.insert(chorusItems).values({ hymnNumber: entry.hymn?.trim() || "Comp", title });
+      chorusesAdded++;
+    }
+  }
+
   console.log(
     `Done. ${servicesCreated} services created, ${songsLinked} service-song links, ` +
-      `${songIdByKey.size} distinct songs in the library, ${shortlistAdded} shortlist items added.`,
+      `${songIdByKey.size} distinct songs in the library, ${shortlistAdded} shortlist items added, ` +
+      `${chorusesAdded} choruses added.`,
   );
 }
 
