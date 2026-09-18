@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Suspense } from "react";
 import { NavPills } from "./_components/nav-pills";
 import { SignOutButton } from "./sign-out-button";
 
@@ -13,7 +14,9 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             <SignOutButton />
           </div>
         </div>
-        <NavPills />
+        <Suspense fallback={null}>
+          <NavPills />
+        </Suspense>
       </div>
       <main className="flex-1">{children}</main>
     </div>
