@@ -26,6 +26,13 @@ function revalidateOos() {
   revalidatePath("/order-of-service");
 }
 
+// Matches item labels loosely — a trailing colon typed by hand (or stray
+// spacing/casing) shouldn't make "Worship:" fail to match "Worship" and
+// silently skip the pull.
+function normalizeLabel(label: string): string {
+  return label.replace(/:+\s*$/, "").trim().toLowerCase();
+}
+
 // Inserts a new blank item right after `afterItemId` (or at the very top when
 // null), shifting everything after it down by one position — so adding a row
 // never requires walking it into place one arrow-click at a time.
@@ -132,8 +139,8 @@ export async function pullSongsFromLogAction(date: string) {
   if (!service || !service.songs.length) return;
 
   const items = await getOosItems(date);
-  const opening = items.find((i) => i.label === "Opening Song");
-  const worship = items.find((i) => i.label === "Worship");
+  const opening = items.find((i) => normalizeLabel(i.label) === "opening song");
+  const worship = items.find((i) => normalizeLabel(i.label) === "worship");
 
   if (opening) {
     await db.delete(oosItemSongs).where(eq(oosItemSongs.oosItemId, opening.id));
