@@ -16,6 +16,16 @@ export function AddServiceForm() {
     setSongs((prev) => prev.map((s, idx) => (idx === i ? { ...s, [field]: value } : s)));
   }
 
+  function moveSong(i: number, direction: "up" | "down") {
+    const target = direction === "up" ? i - 1 : i + 1;
+    setSongs((prev) => {
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[i], next[target]] = [next[target], next[i]];
+      return next;
+    });
+  }
+
   return (
     <form action={formAction} className="rounded-xl border border-border bg-surface p-5 shadow-sm">
       <input type="hidden" name="songs" value={JSON.stringify(songs)} />
@@ -66,7 +76,7 @@ export function AddServiceForm() {
           {songs.map((s, i) => (
             <div
               key={i}
-              className="grid grid-cols-[56px_minmax(0,1fr)_64px_36px] items-center gap-1.5 sm:grid-cols-[74px_minmax(0,1fr)_110px_36px] sm:gap-2"
+              className="grid grid-cols-[56px_minmax(0,1fr)_64px_24px_36px] items-center gap-1.5 sm:grid-cols-[74px_minmax(0,1fr)_110px_24px_36px] sm:gap-2"
             >
               <input
                 value={s.hymnNumber}
@@ -87,6 +97,26 @@ export function AddServiceForm() {
                 placeholder="verses"
                 className="min-w-0 rounded-md border border-border-strong bg-surface px-2 py-1.5 text-sm"
               />
+              <div className="flex flex-col">
+                <button
+                  type="button"
+                  onClick={() => moveSong(i, "up")}
+                  disabled={i === 0}
+                  aria-label="Move song up"
+                  className="flex h-4 w-6 items-center justify-center text-xs text-text-faint hover:text-accent-strong disabled:opacity-30"
+                >
+                  ▲
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveSong(i, "down")}
+                  disabled={i === songs.length - 1}
+                  aria-label="Move song down"
+                  className="flex h-4 w-6 items-center justify-center text-xs text-text-faint hover:text-accent-strong disabled:opacity-30"
+                >
+                  ▼
+                </button>
+              </div>
               <button
                 type="button"
                 onClick={() => setSongs((prev) => prev.filter((_, idx) => idx !== i))}

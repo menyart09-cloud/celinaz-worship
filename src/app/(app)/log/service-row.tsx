@@ -38,6 +38,16 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
     setSongs((prev) => prev.map((s, idx) => (idx === i ? { ...s, [field]: value } : s)));
   }
 
+  function moveSong(i: number, direction: "up" | "down") {
+    const target = direction === "up" ? i - 1 : i + 1;
+    setSongs((prev) => {
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[i], next[target]] = [next[target], next[i]];
+      return next;
+    });
+  }
+
   return (
     <div
       className={
@@ -127,6 +137,26 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
                   placeholder="verses"
                   className="w-16 flex-none rounded-md border border-border-strong bg-surface px-2 py-1 text-sm"
                 />
+                <div className="flex flex-none flex-col">
+                  <button
+                    type="button"
+                    onClick={() => moveSong(i, "up")}
+                    disabled={i === 0}
+                    aria-label="Move song up"
+                    className="flex h-4 w-6 items-center justify-center text-xs text-text-faint hover:text-accent-strong disabled:opacity-30"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveSong(i, "down")}
+                    disabled={i === songs.length - 1}
+                    aria-label="Move song down"
+                    className="flex h-4 w-6 items-center justify-center text-xs text-text-faint hover:text-accent-strong disabled:opacity-30"
+                  >
+                    ▼
+                  </button>
+                </div>
                 <button
                   type="button"
                   onClick={() => setSongs((prev) => prev.filter((_, idx) => idx !== i))}
