@@ -136,25 +136,35 @@ export async function copyFromLastWeekAction(date: string) {
 
 export async function pullSongsFromLogAction(date: string) {
   const service = await getServiceByDate(date);
-  if (!service || !service.songs.length) return;
+  if (!service) return;
 
   const items = await getOosItems(date);
   const opening = items.find((i) => normalizeLabel(i.label) === "opening song");
   const worship = items.find((i) => normalizeLabel(i.label) === "worship");
+  const scripture = items.find((i) => normalizeLabel(i.label) === "scripture");
+  const message = items.find((i) => normalizeLabel(i.label) === "message");
 
-  if (opening) {
-    await db.delete(oosItemSongs).where(eq(oosItemSongs.oosItemId, opening.id));
-    const [first] = service.songs;
-    const songId = await upsertSong(first.hymnNumber, first.title);
-    await db.insert(oosItemSongs).values({ oosItemId: opening.id, songId, position: 0 });
-  }
-  if (worship) {
-    await db.delete(oosItemSongs).where(eq(oosItemSongs.oosItemId, worship.id));
-    const rest = service.songs.slice(1);
-    for (let i = 0; i < rest.length; i++) {
-      const songId = await upsertSong(rest[i].hymnNumber, rest[i].title);
-      await db.insert(oosItemSongs).values({ oosItemId: worship.id, songId, position: i });
+  if (service.songs.length) {
+    if (opening) {
+      await db.delete(oosItemSongs).where(eq(oosItemSongs.oosItemId, opening.id));
+      const [first] = service.songs;
+      const songId = await upsertSong(first.hymnNumber, first.title);
+      await db.insert(oosItemSongs).values({ oosItemId: opening.id, songId, position: 0 });
     }
+    if (worship) {
+      await db.delete(oosItemSongs).where(eq(oosItemSongs.oosItemId, worship.id));
+      const rest = service.songs.slice(1);
+      for (let i = 0; i < rest.length; i++) {
+        const songId = await upsertSong(rest[i].hymnNumber, rest[i].title);
+        await db.insert(oosItemSongs).values({ oosItemId: worship.id, songId, position: i });
+      }
+    }
+  }
+  if (scripture && service.scripture) {
+    await db.update(oosItems).set({ detail: service.scripture }).where(eq(oosItems.id, scripture.id));
+  }
+  if (message && service.sermon) {
+    await db.update(oosItems).set({ detail: service.sermon }).where(eq(oosItems.id, message.id));
   }
   revalidateOos();
 }

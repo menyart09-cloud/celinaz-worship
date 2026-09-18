@@ -72,7 +72,7 @@ export function OosEditor({
               disabled={pending || !hasMatchingService}
               className="rounded-lg border border-border-strong bg-surface px-3 py-1.5 text-sm font-semibold hover:border-accent disabled:opacity-50"
             >
-              🔄 Pull songs from Service Log
+              🔄 Pull from Service Log
             </button>
             <span className="flex-1" />
             <button
