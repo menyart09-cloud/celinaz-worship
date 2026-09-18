@@ -313,17 +313,22 @@ function songTag(hymnNumber: string): string {
 // Hosanna (comp)") or as a numbered list — matching how the owner formatted
 // these by hand in Notes, not the app's card-editor look.
 function PrintItem({ item }: { item: OosItemWithSongs }) {
+  // Some labels already end with a colon the owner typed themselves
+  // (habit from Notes) — strip it here so the line below never doubles up
+  // into "Label::" when we add our own separator.
+  const label = item.label.replace(/:+\s*$/, "");
+
   // Only "Opening Song" gets its single song inlined on the label line
   // (that's how the owner's own Notes formatted it — "Opening Song: Hosanna
   // (comp)"). Every other item, "Worship" especially, always lists its
   // songs as a numbered list, even with just one.
   const inlineSong =
-    item.label === "Opening Song" && !item.assignee && item.songs.length === 1
+    label === "Opening Song" && !item.assignee && item.songs.length === 1
       ? item.songs[0]
       : null;
   const listSongs = inlineSong ? [] : item.songs;
 
-  let headLine = item.label;
+  let headLine = label;
   if (item.assignee) {
     headLine += `: ${item.assignee}`;
   } else if (inlineSong) {
