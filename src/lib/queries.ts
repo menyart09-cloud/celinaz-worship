@@ -1,4 +1,4 @@
-import { asc, desc, eq, lt, sql } from "drizzle-orm";
+import { asc, desc, eq, isNotNull, lt, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   services,
@@ -177,6 +177,27 @@ export async function getAllOosDates(): Promise<OosLogEntry[]> {
     .groupBy(oosItems.date)
     .orderBy(desc(oosItems.date));
   return rows;
+}
+
+// Mirrors the trailing-colon-tolerant match used when pulling from the
+// Service Log — the owner's own "Scripture:" label shouldn't need to be
+// typed exactly to show up here.
+function normalizeLabel(label: string): string {
+  return label.replace(/:+\s*$/, "").trim().toLowerCase();
+}
+
+export type ScriptureHistoryRow = { date: string; scripture: string };
+
+export async function getScriptureHistory(): Promise<ScriptureHistoryRow[]> {
+  const rows = await db
+    .select({ date: oosItems.date, label: oosItems.label, detail: oosItems.detail })
+    .from(oosItems)
+    .where(isNotNull(oosItems.detail))
+    .orderBy(desc(oosItems.date));
+
+  return rows
+    .filter((r) => normalizeLabel(r.label) === "scripture" && r.detail?.trim())
+    .map((r) => ({ date: r.date, scripture: r.detail!.trim() }));
 }
 
 export async function findLastOosDateBefore(date: string): Promise<string | null> {
