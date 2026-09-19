@@ -141,7 +141,6 @@ export async function pullSongsFromLogAction(date: string) {
   const items = await getOosItems(date);
   const opening = items.find((i) => normalizeLabel(i.label) === "opening song");
   const worship = items.find((i) => normalizeLabel(i.label) === "worship");
-  const scripture = items.find((i) => normalizeLabel(i.label) === "scripture");
   const message = items.find((i) => normalizeLabel(i.label) === "message");
 
   if (service.songs.length) {
@@ -160,11 +159,12 @@ export async function pullSongsFromLogAction(date: string) {
       }
     }
   }
-  if (scripture && service.scripture) {
-    await db.update(oosItems).set({ detail: service.scripture }).where(eq(oosItems.id, scripture.id));
-  }
-  if (message && service.sermon) {
-    await db.update(oosItems).set({ detail: service.sermon }).where(eq(oosItems.id, message.id));
+  // The pastor's scripture passage belongs with his sermon under Message —
+  // the Order of Service's own "Scripture" item is a separate reading the
+  // owner fills in by hand and pulling must never overwrite it.
+  if (message && (service.sermon || service.scripture)) {
+    const detail = [service.sermon, service.scripture].filter(Boolean).join(" — ");
+    await db.update(oosItems).set({ detail }).where(eq(oosItems.id, message.id));
   }
   revalidateOos();
 }
