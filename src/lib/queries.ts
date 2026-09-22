@@ -163,6 +163,48 @@ export async function getOosItems(date: string): Promise<OosItemWithSongs[]> {
   return [...byId.values()].sort((a, b) => a.position - b.position);
 }
 
+export type OosBackupRow = {
+  date: string;
+  label: string;
+  assignee: string | null;
+  detail: string | null;
+  position: number;
+  songs: { hymnNumber: string; title: string }[];
+};
+
+export async function getAllOosItemsForBackup(): Promise<OosBackupRow[]> {
+  const rows = await db
+    .select({
+      itemId: oosItems.id,
+      date: oosItems.date,
+      label: oosItems.label,
+      assignee: oosItems.assignee,
+      detail: oosItems.detail,
+      position: oosItems.position,
+      songId: songs.id,
+      hymnNumber: songs.hymnNumber,
+      title: songs.title,
+      songPosition: oosItemSongs.position,
+    })
+    .from(oosItems)
+    .leftJoin(oosItemSongs, eq(oosItemSongs.oosItemId, oosItems.id))
+    .leftJoin(songs, eq(songs.id, oosItemSongs.songId))
+    .orderBy(asc(oosItems.date), asc(oosItems.position), asc(oosItemSongs.position));
+
+  const byId = new Map<string, OosBackupRow>();
+  for (const r of rows) {
+    let item = byId.get(r.itemId);
+    if (!item) {
+      item = { date: r.date, label: r.label, assignee: r.assignee, detail: r.detail, position: r.position, songs: [] };
+      byId.set(r.itemId, item);
+    }
+    if (r.songId && r.title) {
+      item.songs.push({ hymnNumber: r.hymnNumber ?? "Comp", title: r.title });
+    }
+  }
+  return [...byId.values()].sort((a, b) => (a.date === b.date ? a.position - b.position : a.date < b.date ? -1 : 1));
+}
+
 export type OosLogEntry = { date: string; itemCount: number; songCount: number };
 
 export async function getAllOosDates(): Promise<OosLogEntry[]> {

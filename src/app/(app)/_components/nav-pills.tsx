@@ -43,6 +43,7 @@ export function NavPills() {
     { href: "/shortlist", label: "Shortlist", match: "/shortlist" },
     { href: "/choruses", label: "Choruses", match: "/choruses" },
     { href: "/scriptures", label: "Scriptures", match: "/scriptures" },
+    { href: "/maintenance", label: "Maintenance", match: "/maintenance" },
   ];
 
   return (
