@@ -18,7 +18,8 @@ export default async function MaintenancePage() {
           Download a spreadsheet snapshot of everything logged so far — {services.length}{" "}
           {services.length === 1 ? "service" : "services"} in the Service Log and {oosDates.length}{" "}
           {oosDates.length === 1 ? "run sheet" : "run sheets"} in the Order of Service — in case
-          anything ever happens to the app or its host. Keep a copy somewhere safe.
+          anything ever happens to the app or its host. Keep a copy somewhere safe — the file&apos;s
+          &quot;Read Me&quot; tab has more on what to do with it.
         </p>
         <a
           href="/api/backup"

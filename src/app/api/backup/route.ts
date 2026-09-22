@@ -16,6 +16,36 @@ export async function GET() {
 
   const workbook = new ExcelJS.Workbook();
 
+  // First sheet added is the one most spreadsheet apps open to — and unlike
+  // anything written on the Maintenance page, these instructions travel
+  // with the file itself, so they're still there even if the app and its
+  // host are long gone.
+  const readMe = workbook.addWorksheet("Read Me");
+  readMe.getColumn(1).width = 100;
+  readMe.getColumn(1).alignment = { wrapText: true, vertical: "top" };
+  const readMeLines = [
+    "Celinaz Worship — Backup Read Me",
+    `Generated ${todayIso()}`,
+    "",
+    "WHAT THIS IS",
+    "This spreadsheet is a full backup of everything in the Worship Set Planner as of the date above. The other two tabs are:",
+    "  • Service Log — every service you've logged: date, sermon, scripture, note, and the songs sung.",
+    "  • Order of Service — every run sheet you've saved: one row per item, with its label, assignee, notes, and songs.",
+    "",
+    "IF THE APP OR ITS HOST EVER GOES DOWN FOR GOOD",
+    "This file is your safety net. If celinaz-worship.vercel.app is ever lost — hosting canceled, account lost, anything like that — this spreadsheet has everything needed to start over: your full service history and song library, ready to be re-entered into a new copy of the app or read on its own.",
+    "",
+    "WHAT TO DO WITH IT",
+    "  • Save a copy somewhere that isn't just this computer — email it to yourself, or save it to Google Drive, iCloud, or Dropbox.",
+    "  • Come back to the Maintenance tab every so often (monthly, or after a few Sundays) and download a fresh one — an old backup won't have your most recent services.",
+    "  • Keep more than one dated copy if you can. If a recent one turns out incomplete, you'll have an older one to fall back on.",
+  ];
+  readMeLines.forEach((line, i) => {
+    const row = readMe.addRow([line]);
+    if (i === 0) row.font = { bold: true, size: 14 };
+    else if (line === line.toUpperCase() && line.trim()) row.font = { bold: true };
+  });
+
   const logSheet = workbook.addWorksheet("Service Log");
   logSheet.columns = [
     { header: "Date", key: "date", width: 12 },
