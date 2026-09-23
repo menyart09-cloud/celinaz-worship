@@ -5,10 +5,10 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { shortlistItems } from "@/db/schema";
 
-export async function addShortlistItemAction(title: string) {
+export async function addShortlistItemAction(title: string, hymnNumber: string) {
   const trimmed = title.trim();
   if (!trimmed) return;
-  await db.insert(shortlistItems).values({ hymnNumber: "Comp", title: trimmed });
+  await db.insert(shortlistItems).values({ hymnNumber: hymnNumber.trim() || "Comp", title: trimmed });
   revalidatePath("/shortlist");
 }
 

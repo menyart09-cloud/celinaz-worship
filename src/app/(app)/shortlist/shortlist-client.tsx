@@ -16,6 +16,7 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 ];
 
 export function ShortlistClient({ items }: { items: Item[] }) {
+  const [hymnNumber, setHymnNumber] = useState("");
   const [value, setValue] = useState("");
   const [pending, startTransition] = useTransition();
   const [sort, setSort] = useState<Sort>({ key: "added", dir: -1 });
@@ -23,8 +24,9 @@ export function ShortlistClient({ items }: { items: Item[] }) {
   function add() {
     if (!value.trim()) return;
     startTransition(async () => {
-      await addShortlistItemAction(value);
+      await addShortlistItemAction(value, hymnNumber);
       setValue("");
+      setHymnNumber("");
     });
   }
 
@@ -55,6 +57,14 @@ export function ShortlistClient({ items }: { items: Item[] }) {
   return (
     <div>
       <div className="mb-3.5 flex gap-2">
+        <input
+          value={hymnNumber}
+          onChange={(e) => setHymnNumber(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && add()}
+          placeholder="#"
+          title="Hymn # (leave blank for a chorus)"
+          className="font-mono-tab w-16 flex-none rounded-lg border border-border-strong bg-surface px-2 py-2.5 text-center text-sm"
+        />
         <input
           value={value}
           onChange={(e) => setValue(e.target.value)}
