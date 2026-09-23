@@ -152,7 +152,10 @@ export async function pullSongsFromLogAction(date: string) {
     }
     if (worship) {
       await db.delete(oosItemSongs).where(eq(oosItemSongs.oosItemId, worship.id));
-      const rest = service.songs.slice(1);
+      // Only the "Opening Song" item claims the first song — if that item
+      // doesn't exist this week, Worship gets everything instead of
+      // silently losing the first song to nowhere.
+      const rest = opening ? service.songs.slice(1) : service.songs;
       for (let i = 0; i < rest.length; i++) {
         const songId = await upsertSong(rest[i].hymnNumber, rest[i].title);
         await db.insert(oosItemSongs).values({ oosItemId: worship.id, songId, position: i });
