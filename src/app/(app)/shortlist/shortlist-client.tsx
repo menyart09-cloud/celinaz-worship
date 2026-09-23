@@ -10,8 +10,8 @@ type SortKey = "added" | "title" | "hymn";
 type Sort = { key: SortKey; dir: 1 | -1 };
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: "added", label: "Recently Added" },
   { key: "title", label: "Title" },
+  { key: "added", label: "Recently Added" },
   { key: "hymn", label: "Hymn #" },
 ];
 
