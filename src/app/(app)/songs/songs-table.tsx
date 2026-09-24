@@ -117,7 +117,7 @@ export function SongsTable({ songs }: { songs: SongLibraryRow[] }) {
                         : "border border-accent-soft-border bg-accent-soft text-accent-strong")
                     }
                   >
-                    {s.source === "hymnal" ? "Hymnal" : "Chorus"}
+                    {s.source === "hymnal" ? "Hymnal" : "Comp"}
                   </span>
                 </td>
                 <td className="border-t border-border px-3.5 py-2.5 text-sm text-text-muted">
