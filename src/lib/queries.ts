@@ -68,6 +68,7 @@ export type SongLibraryRow = {
   source: "hymnal" | "chorus" | "other";
   useCount: number;
   lastUsed: string | null;
+  usedDates: string[]; // every date it's been sung, newest first
 };
 
 export async function getSongLibrary(): Promise<SongLibraryRow[]> {
@@ -77,16 +78,35 @@ export async function getSongLibrary(): Promise<SongLibraryRow[]> {
       hymnNumber: songs.hymnNumber,
       title: songs.title,
       source: songs.source,
-      useCount: sql<number>`count(${serviceSongs.id})`.mapWith(Number),
-      lastUsed: sql<string | null>`max(${services.date})`,
+      date: services.date,
     })
     .from(songs)
     .leftJoin(serviceSongs, eq(serviceSongs.songId, songs.id))
     .leftJoin(services, eq(services.id, serviceSongs.serviceId))
-    .groupBy(songs.id)
-    .orderBy(asc(songs.title));
+    .orderBy(asc(songs.title), desc(services.date));
 
-  return rows;
+  const byId = new Map<string, SongLibraryRow>();
+  for (const r of rows) {
+    let song = byId.get(r.id);
+    if (!song) {
+      song = {
+        id: r.id,
+        hymnNumber: r.hymnNumber,
+        title: r.title,
+        source: r.source,
+        useCount: 0,
+        lastUsed: null,
+        usedDates: [],
+      };
+      byId.set(r.id, song);
+    }
+    if (r.date) {
+      song.usedDates.push(r.date);
+      song.useCount++;
+      if (!song.lastUsed) song.lastUsed = r.date;
+    }
+  }
+  return [...byId.values()];
 }
 
 export async function getShortlist() {
@@ -254,11 +274,12 @@ export async function findLastOosDateBefore(date: string): Promise<string | null
 
 export async function searchByHymn(hymnNumber: string) {
   const q = hymnNumber.trim().toLowerCase();
-  if (!q) return null;
+  if (!q) return [];
   const all = await getAllServices();
-  for (let i = all.length - 1; i >= 0; i--) {
-    const song = all[i].songs.find((s) => s.hymnNumber.toLowerCase() === q);
-    if (song) return { service: all[i], song };
+  const hits: { service: ServiceWithSongs; song: ServiceWithSongs["songs"][number] }[] = [];
+  for (const service of all) {
+    const song = service.songs.find((s) => s.hymnNumber.toLowerCase() === q);
+    if (song) hits.push({ service, song });
   }
-  return null;
+  return hits;
 }

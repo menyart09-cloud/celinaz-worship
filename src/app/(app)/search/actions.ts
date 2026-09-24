@@ -21,6 +21,8 @@ export type SearchResult =
       hymnNumber: string;
       title: string;
       lastDate: string;
+      count: number;
+      history: { date: string; hymnNumber: string }[];
       siblings: ServiceWithSongs["songs"];
     }
   | { kind: "date-none"; query: string }
@@ -52,16 +54,22 @@ export async function searchAction(mode: "title" | "hymn" | "date", query: strin
   }
 
   if (mode === "hymn") {
-    const hit = await searchByHymn(q);
-    if (!hit) return { kind: "hymn-none", query: q };
-    const siblings = hit.service.songs.filter(
-      (s) => !(s.hymnNumber === hit.song.hymnNumber && s.title === hit.song.title),
+    const hits = await searchByHymn(q);
+    if (hits.length === 0) return { kind: "hymn-none", query: q };
+    const last = hits[hits.length - 1];
+    const siblings = last.service.songs.filter(
+      (s) => !(s.hymnNumber === last.song.hymnNumber && s.title === last.song.title),
     );
     return {
       kind: "hymn-hit",
-      hymnNumber: hit.song.hymnNumber,
-      title: hit.song.title,
-      lastDate: hit.service.date,
+      hymnNumber: last.song.hymnNumber,
+      title: last.song.title,
+      lastDate: last.service.date,
+      count: hits.length,
+      history: hits
+        .slice()
+        .reverse()
+        .map((h) => ({ date: h.service.date, hymnNumber: h.song.hymnNumber })),
       siblings,
     };
   }

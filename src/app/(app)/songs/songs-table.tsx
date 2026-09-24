@@ -96,7 +96,7 @@ export function SongsTable({ songs }: { songs: SongLibraryRow[] }) {
               <Th label="Hymn #" sortKey="hymn" width="80px" sort={sort} onToggle={toggleSort} />
               <Th label="Title" sortKey="title" sort={sort} onToggle={toggleSort} />
               <Th label="Source" sortKey="source" width="90px" sort={sort} onToggle={toggleSort} />
-              <Th label="Usage" sortKey="uses" width="170px" sort={sort} onToggle={toggleSort} />
+              <Th label="Usage" sortKey="uses" width="260px" sort={sort} onToggle={toggleSort} />
             </tr>
           </thead>
           <tbody>
@@ -122,10 +122,18 @@ export function SongsTable({ songs }: { songs: SongLibraryRow[] }) {
                 </td>
                 <td className="border-t border-border px-3.5 py-2.5 text-sm text-text-muted">
                   {s.useCount > 0 ? (
-                    <>
-                      {s.useCount} {s.useCount === 1 ? "use" : "uses"} · last{" "}
-                      <b className="font-mono-tab text-foreground">{s.lastUsed ? isoToMdy(s.lastUsed) : "—"}</b>
-                    </>
+                    <div>
+                      <div>
+                        {s.useCount} {s.useCount === 1 ? "use" : "uses"}
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
+                        {s.usedDates.map((d) => (
+                          <span key={d} className="font-mono-tab text-xs text-text-faint">
+                            {isoToMdy(d)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   ) : (
                     <span className="text-text-faint italic">never used</span>
                   )}

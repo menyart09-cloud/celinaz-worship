@@ -129,9 +129,16 @@ function ResultView({ result }: { result: SearchResult }) {
           <StatusPill used />
         </div>
         <p className="mb-3 text-sm text-text-muted">
-          Hymn <b className="font-mono-tab text-foreground">#{result.hymnNumber}</b> · last used{" "}
-          <b className="font-mono-tab text-foreground">{isoToMdy(result.lastDate)}</b>
+          Hymn <b className="font-mono-tab text-foreground">#{result.hymnNumber}</b> · used{" "}
+          {result.count} {result.count === 1 ? "time" : "times"}
         </p>
+        <ul className="flex flex-col">
+          {result.history.map((h, i) => (
+            <li key={i} className="flex justify-between border-t border-border py-2 text-sm first:border-t-0">
+              <span className="font-mono-tab font-semibold text-accent-strong">{isoToMdy(h.date)}</span>
+            </li>
+          ))}
+        </ul>
         <AlsoPlayed date={result.lastDate} siblings={result.siblings} />
       </div>
     );
