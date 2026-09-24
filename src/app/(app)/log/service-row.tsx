@@ -55,12 +55,9 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
         (editing ? "bg-accent-soft" : isNoSongsNote ? "bg-warn-soft" : "")
       }
     >
-      <div className="flex items-start justify-between gap-1 p-3">
-        <span className="font-mono-tab font-semibold text-accent-strong">
+      <div className="flex flex-col items-start gap-1.5 p-3">
+        <span className="font-mono-tab font-semibold whitespace-nowrap text-accent-strong">
           {isoToMdy(service.date)}
-          <span className="block text-xs font-normal text-text-faint">
-            {"'" + service.date.slice(2, 4)}
-          </span>
         </span>
         <button
           type="button"
