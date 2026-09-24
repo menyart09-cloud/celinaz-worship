@@ -14,6 +14,11 @@ const VIEWPORT_MARGIN = 8;
 // overflow-hidden/auto, cutting the popover off. Positioning it in a portal,
 // fixed to the viewport from the button's own rect, sidesteps every one of
 // those ancestors at once instead of loosening each container's overflow.
+//
+// maxHeight caps the popover to however much room is actually left in that
+// direction, rather than letting a long "upcoming services" list just run
+// off the bottom of the screen with no way to reach the rest of it — the
+// list inside scrolls once it hits that cap.
 function computePosition(btn: HTMLElement) {
   const rect = btn.getBoundingClientRect();
   let left = rect.left;
@@ -22,12 +27,13 @@ function computePosition(btn: HTMLElement) {
   }
   left = Math.max(VIEWPORT_MARGIN, left);
 
-  const spaceBelow = window.innerHeight - rect.bottom;
-  const openUpward = spaceBelow < 240 && rect.top > spaceBelow;
+  const spaceBelow = window.innerHeight - rect.bottom - VIEWPORT_MARGIN;
+  const spaceAbove = rect.top - VIEWPORT_MARGIN;
+  const openUpward = spaceBelow < 200 && spaceAbove > spaceBelow;
 
   return openUpward
-    ? { left, bottom: window.innerHeight - rect.top + 4, top: undefined }
-    : { left, top: rect.bottom + 4, bottom: undefined };
+    ? { left, bottom: window.innerHeight - rect.top + 4, top: undefined, maxHeight: spaceAbove - 4 }
+    : { left, top: rect.bottom + 4, bottom: undefined, maxHeight: spaceBelow - 4 };
 }
 
 export function HymnBadge({ hymnNumber }: { hymnNumber: string }) {
@@ -56,7 +62,9 @@ export function SongChip({
   hideBadge?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState<{ left: number; top?: number; bottom?: number } | null>(null);
+  const [position, setPosition] = useState<
+    { left: number; top?: number; bottom?: number; maxHeight: number } | null
+  >(null);
   const [upcoming, setUpcoming] = useState<ServiceWithSongs[] | null>(null);
   const [addedTo, setAddedTo] = useState<Set<string>>(new Set());
   const [pending, startTransition] = useTransition();
@@ -75,8 +83,12 @@ export function SongChip({
     }
     // A scrolling ancestor moving the button out from under a viewport-fixed
     // popover would leave it floating over the wrong row — simplest fix is
-    // to just close it, same as clicking away.
-    function onScroll() {
+    // to just close it, same as clicking away. But the popover's own
+    // services list scrolls internally, and that scroll event bubbles up
+    // to this same capture-phase listener — closing on that would make the
+    // list impossible to scroll at all, so it's excluded.
+    function onScroll(e: Event) {
+      if (popRef.current?.contains(e.target as Node)) return;
       setOpen(false);
     }
     document.addEventListener("mousedown", onDocClick);
@@ -127,10 +139,16 @@ export function SongChip({
         createPortal(
           <div
             ref={popRef}
-            style={{ position: "fixed", left: position.left, top: position.top, bottom: position.bottom }}
-            className="z-50 w-64 rounded-xl border border-border-strong bg-surface p-3 shadow-lg"
+            style={{
+              position: "fixed",
+              left: position.left,
+              top: position.top,
+              bottom: position.bottom,
+              maxHeight: position.maxHeight,
+            }}
+            className="z-50 flex w-64 flex-col rounded-xl border border-border-strong bg-surface p-3 shadow-lg"
           >
-            <div className="mb-2 border-b border-border pb-2">
+            <div className="mb-2 flex-none border-b border-border pb-2">
               <div className="text-[0.68rem] font-bold tracking-wide text-text-muted uppercase">
                 Add to a future service
               </div>
@@ -143,7 +161,7 @@ export function SongChip({
                 No upcoming services yet — add one first.
               </p>
             ) : (
-              <div className="flex flex-col gap-1">
+              <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
                 {upcoming.map((s) => {
                   const added = addedTo.has(s.id);
                   return (
