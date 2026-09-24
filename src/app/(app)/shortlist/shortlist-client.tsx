@@ -19,7 +19,7 @@ export function ShortlistClient({ items }: { items: Item[] }) {
   const [hymnNumber, setHymnNumber] = useState("");
   const [value, setValue] = useState("");
   const [pending, startTransition] = useTransition();
-  const [sort, setSort] = useState<Sort>({ key: "added", dir: -1 });
+  const [sort, setSort] = useState<Sort>({ key: "title", dir: 1 });
 
   function add() {
     if (!value.trim()) return;
