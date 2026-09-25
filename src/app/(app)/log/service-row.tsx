@@ -166,7 +166,7 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
             ))}
             <button
               type="button"
-              onClick={() => setSongs((prev) => [...prev, { hymnNumber: "Comp", title: "", verses: "" }])}
+              onClick={() => setSongs((prev) => [...prev, { hymnNumber: "", title: "", verses: "" }])}
               className="rounded-md border border-dashed border-border-strong px-3 py-1.5 text-sm font-semibold text-text-muted hover:border-accent hover:text-accent-strong"
             >
               + Add another song

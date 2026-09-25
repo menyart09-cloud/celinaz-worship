@@ -10,7 +10,7 @@ const initialState: CreateServiceState = { error: null };
 
 export function AddServiceForm() {
   const [state, formAction, pending] = useActionState(createServiceAction, initialState);
-  const [songs, setSongs] = useState<SongDraft[]>([{ hymnNumber: "Comp", title: "", verses: "" }]);
+  const [songs, setSongs] = useState<SongDraft[]>([{ hymnNumber: "", title: "", verses: "" }]);
 
   function updateSong(i: number, field: keyof SongDraft, value: string) {
     setSongs((prev) => prev.map((s, idx) => (idx === i ? { ...s, [field]: value } : s)));
@@ -130,7 +130,7 @@ export function AddServiceForm() {
         </div>
         <button
           type="button"
-          onClick={() => setSongs((prev) => [...prev, { hymnNumber: "Comp", title: "", verses: "" }])}
+          onClick={() => setSongs((prev) => [...prev, { hymnNumber: "", title: "", verses: "" }])}
           className="mt-3 w-full rounded-md border border-dashed border-border-strong px-3 py-2 text-sm font-semibold text-text-muted hover:border-accent hover:text-accent-strong"
         >
           + Add another song
