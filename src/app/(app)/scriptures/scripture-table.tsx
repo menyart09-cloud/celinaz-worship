@@ -23,8 +23,8 @@ function Th({
   const active = sort.key === sortKey;
   return (
     <th
-      style={width ? { width } : undefined}
-      className="sticky top-0 z-10 border-b border-border bg-surface-sunk p-0 text-left"
+      style={{ ...(width ? { width } : undefined), top: "var(--app-header-height, 92px)" }}
+      className="sticky z-20 border-b border-border bg-surface-sunk p-0 text-left"
     >
       <button
         type="button"
@@ -75,7 +75,9 @@ export function ScriptureTable({ rows }: { rows: ScriptureHistoryRow[] }) {
           item on an Order of Service.
         </p>
       ) : (
-        <div className="max-h-[560px] overflow-auto rounded-xl border border-border">
+        // No overflow-hidden here on purpose — it breaks position:sticky on
+        // the <th> below even without actually clipping anything.
+        <div className="rounded-xl border border-border">
           <table className="w-full border-separate border-spacing-0 text-sm">
             <thead>
               <tr>

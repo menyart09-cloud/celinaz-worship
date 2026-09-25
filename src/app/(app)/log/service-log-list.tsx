@@ -17,7 +17,10 @@ export function ServiceLogList({ servicesList }: { servicesList: ServiceWithSong
 
   return (
     <div>
-      <div className="sticky top-[92px] z-20 grid grid-cols-[100px_minmax(0,1.15fr)_minmax(0,1.5fr)] rounded-t-lg border border-border bg-surface-sunk text-xs font-bold tracking-wide text-text-muted uppercase">
+      <div
+        className="sticky z-20 grid grid-cols-[100px_minmax(0,1.15fr)_minmax(0,1.5fr)] rounded-t-lg border border-border bg-surface-sunk text-xs font-bold tracking-wide text-text-muted uppercase"
+        style={{ top: "var(--app-header-height, 92px)" }}
+      >
         <button
           type="button"
           onClick={() => setSortDir((d) => (d === 1 ? -1 : 1))}
