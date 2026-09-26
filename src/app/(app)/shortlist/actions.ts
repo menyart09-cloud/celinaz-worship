@@ -8,7 +8,7 @@ import { shortlistItems } from "@/db/schema";
 export async function addShortlistItemAction(title: string, hymnNumber: string) {
   const trimmed = title.trim();
   if (!trimmed) return;
-  await db.insert(shortlistItems).values({ hymnNumber: hymnNumber.trim() || "Comp", title: trimmed });
+  await db.insert(shortlistItems).values({ hymnNumber: hymnNumber.trim(), title: trimmed });
   revalidatePath("/shortlist");
 }
 

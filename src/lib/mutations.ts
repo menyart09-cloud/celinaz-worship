@@ -9,7 +9,7 @@ function sourceForHymn(hymn: string): "hymnal" | "chorus" {
 // Server-only helper (not a Server Action itself) shared by every mutation
 // that needs a song id from a hymn#/title pair — upserts by (hymnNumber, title).
 export async function upsertSong(hymnNumberRaw: string, titleRaw: string): Promise<string> {
-  const hymnNumber = hymnNumberRaw.trim() || "Comp";
+  const hymnNumber = hymnNumberRaw.trim();
   const title = titleRaw.trim();
 
   const existing = await db.query.songs.findFirst({

@@ -48,7 +48,7 @@ export async function createServiceAction(
   const cleanSongs = songsInput.filter((s) => s.title.trim());
   for (let i = 0; i < cleanSongs.length; i++) {
     const song = cleanSongs[i];
-    const songId = await upsertSong(song.hymnNumber || "Comp", song.title);
+    const songId = await upsertSong(song.hymnNumber, song.title);
     await db.insert(serviceSongs).values({
       serviceId: created.id,
       songId,

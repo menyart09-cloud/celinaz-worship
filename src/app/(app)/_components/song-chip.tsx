@@ -37,6 +37,7 @@ function computePosition(btn: HTMLElement) {
 }
 
 export function HymnBadge({ hymnNumber }: { hymnNumber: string }) {
+  if (!hymnNumber) return null;
   const isComp = hymnNumber === "Comp";
   return (
     <span

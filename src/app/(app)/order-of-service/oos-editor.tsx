@@ -305,6 +305,7 @@ function OosRow({
 }
 
 function songTag(hymnNumber: string): string {
+  if (!hymnNumber) return "";
   return hymnNumber === "Comp" ? "(comp)" : `(#${hymnNumber})`;
 }
 
