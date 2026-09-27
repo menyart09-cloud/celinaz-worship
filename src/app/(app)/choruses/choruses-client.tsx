@@ -17,14 +17,16 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 
 export function ChorusesClient({ items }: { items: Item[] }) {
   const [value, setValue] = useState("");
+  const [hymnNumber, setHymnNumber] = useState("");
   const [pending, startTransition] = useTransition();
   const [sort, setSort] = useState<Sort>({ key: "title", dir: 1 });
 
   function add() {
     if (!value.trim()) return;
     startTransition(async () => {
-      await addChorusItemAction(value);
+      await addChorusItemAction(value, hymnNumber);
       setValue("");
+      setHymnNumber("");
     });
   }
 
@@ -54,7 +56,46 @@ export function ChorusesClient({ items }: { items: Item[] }) {
 
   return (
     <div>
-      <div className="mb-3.5 flex gap-2">
+      {/* Mobile: hymn# + title + button no longer fit one row — title gets
+          its own full-width line, hymn# and the button share the one below
+          it. Desktop keeps the original single row, untouched. */}
+      <div className="mb-3.5 flex flex-col gap-2 md:hidden">
+        <input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && add()}
+          placeholder="e.g. Way Maker"
+          className="w-full rounded-lg border border-border-strong bg-surface px-3.5 py-2.5 text-sm"
+        />
+        <div className="flex gap-2">
+          <input
+            value={hymnNumber}
+            onChange={(e) => setHymnNumber(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && add()}
+            placeholder="#"
+            title="Hymn # (leave blank for Comp)"
+            className="font-mono-tab w-16 flex-none rounded-lg border border-border-strong bg-surface px-2 py-2.5 text-center text-sm"
+          />
+          <button
+            type="button"
+            onClick={add}
+            disabled={pending}
+            className="flex-1 rounded-lg border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-strong disabled:opacity-60"
+          >
+            + Add chorus
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-3.5 hidden gap-2 md:flex">
+        <input
+          value={hymnNumber}
+          onChange={(e) => setHymnNumber(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && add()}
+          placeholder="#"
+          title="Hymn # (leave blank for Comp)"
+          className="font-mono-tab w-16 flex-none rounded-lg border border-border-strong bg-surface px-2 py-2.5 text-center text-sm"
+        />
         <input
           value={value}
           onChange={(e) => setValue(e.target.value)}

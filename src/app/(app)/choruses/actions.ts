@@ -5,10 +5,13 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { chorusItems } from "@/db/schema";
 
-export async function addChorusItemAction(title: string) {
+export async function addChorusItemAction(title: string, hymnNumber: string) {
   const trimmed = title.trim();
   if (!trimmed) return;
-  await db.insert(chorusItems).values({ hymnNumber: "Comp", title: trimmed });
+  // Most items on this list genuinely have no hymnal number, so leaving the
+  // field blank still means "Comp" (played from the computer) — but a real
+  // number typed in overrides that.
+  await db.insert(chorusItems).values({ hymnNumber: hymnNumber.trim() || "Comp", title: trimmed });
   revalidatePath("/choruses");
 }
 
