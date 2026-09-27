@@ -15,6 +15,16 @@ export async function addChorusItemAction(title: string, hymnNumber: string) {
   revalidatePath("/choruses");
 }
 
+export async function updateChorusItemAction(id: string, title: string, hymnNumber: string) {
+  const trimmed = title.trim();
+  if (!trimmed) return;
+  await db
+    .update(chorusItems)
+    .set({ hymnNumber: hymnNumber.trim() || "Comp", title: trimmed })
+    .where(eq(chorusItems.id, id));
+  revalidatePath("/choruses");
+}
+
 export async function removeChorusItemAction(id: string) {
   await db.delete(chorusItems).where(eq(chorusItems.id, id));
   revalidatePath("/choruses");

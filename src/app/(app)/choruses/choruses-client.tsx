@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { SongChip } from "../_components/song-chip";
-import { addChorusItemAction, removeChorusItemAction } from "./actions";
+import { addChorusItemAction, removeChorusItemAction, updateChorusItemAction } from "./actions";
 
 type Item = { id: string; hymnNumber: string; title: string; createdAt: string };
 
@@ -144,23 +144,92 @@ export function ChorusesClient({ items }: { items: Item[] }) {
             No choruses yet — add one above.
           </p>
         ) : (
-          sortedItems.map((item, i) => (
-            <div
-              key={item.id}
-              className={"flex items-center justify-between gap-2 border-t border-border p-3 first:border-t-0 " + (i % 2 === 1 ? "bg-surface-alt" : "")}
-            >
-              <SongChip hymnNumber={item.hymnNumber} title={item.title} />
-              <button
-                type="button"
-                onClick={() => startTransition(() => removeChorusItemAction(item.id))}
-                aria-label="Remove chorus"
-                className="flex h-9 w-9 flex-none items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent"
-              >
-                ✕
-              </button>
-            </div>
-          ))
+          sortedItems.map((item, i) => <ChorusRow key={item.id} item={item} isEven={i % 2 === 1} />)
         )}
+      </div>
+    </div>
+  );
+}
+
+function ChorusRow({ item, isEven }: { item: Item; isEven: boolean }) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(item.title);
+  const [hymnNumber, setHymnNumber] = useState(item.hymnNumber);
+  const [pending, startTransition] = useTransition();
+
+  function startEdit() {
+    setTitle(item.title);
+    setHymnNumber(item.hymnNumber);
+    setEditing(true);
+  }
+
+  function save() {
+    if (!title.trim()) return;
+    startTransition(async () => {
+      await updateChorusItemAction(item.id, title, hymnNumber);
+      setEditing(false);
+    });
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-2 border-t border-border bg-accent-soft p-3 first:border-t-0">
+        <input
+          value={hymnNumber}
+          onChange={(e) => setHymnNumber(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && save()}
+          placeholder="#"
+          title="Hymn # (leave blank for Comp)"
+          className="font-mono-tab w-16 flex-none rounded-md border border-border-strong bg-surface px-2 py-1.5 text-center text-sm"
+        />
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && save()}
+          autoFocus
+          className="min-w-0 flex-1 rounded-md border border-border-strong bg-surface px-2 py-1.5 text-sm"
+        />
+        <button
+          type="button"
+          onClick={() => setEditing(false)}
+          className="flex-none rounded-md border border-border-strong px-3 py-1.5 text-sm font-semibold"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={save}
+          disabled={pending}
+          className="flex-none rounded-md border border-accent bg-accent px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-60"
+        >
+          {pending ? "Saving…" : "Save"}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={"flex items-center justify-between gap-2 border-t border-border p-3 first:border-t-0 " + (isEven ? "bg-surface-alt" : "")}
+    >
+      <SongChip hymnNumber={item.hymnNumber} title={item.title} />
+      <div className="flex flex-none gap-1">
+        <button
+          type="button"
+          onClick={startEdit}
+          aria-label="Edit chorus"
+          className="flex h-9 w-9 items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent-strong"
+        >
+          ✎
+        </button>
+        <button
+          type="button"
+          onClick={() => startTransition(() => removeChorusItemAction(item.id))}
+          aria-label="Remove chorus"
+          className="flex h-9 w-9 items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent"
+        >
+          ✕
+        </button>
       </div>
     </div>
   );

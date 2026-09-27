@@ -12,6 +12,16 @@ export async function addShortlistItemAction(title: string, hymnNumber: string) 
   revalidatePath("/shortlist");
 }
 
+export async function updateShortlistItemAction(id: string, title: string, hymnNumber: string) {
+  const trimmed = title.trim();
+  if (!trimmed) return;
+  await db
+    .update(shortlistItems)
+    .set({ hymnNumber: hymnNumber.trim(), title: trimmed })
+    .where(eq(shortlistItems.id, id));
+  revalidatePath("/shortlist");
+}
+
 export async function removeShortlistItemAction(id: string) {
   await db.delete(shortlistItems).where(eq(shortlistItems.id, id));
   revalidatePath("/shortlist");
