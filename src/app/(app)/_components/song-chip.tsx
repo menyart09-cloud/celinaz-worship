@@ -36,19 +36,24 @@ function computePosition(btn: HTMLElement) {
     : { left, top: rect.bottom + 4, bottom: undefined, maxHeight: spaceBelow - 4 };
 }
 
+// Always renders the badge's box, even with no hymn number, so titles across
+// a list still line up in a column instead of the ones with no badge
+// shifting left into its space.
 export function HymnBadge({ hymnNumber }: { hymnNumber: string }) {
-  if (!hymnNumber) return null;
   const isComp = hymnNumber === "Comp";
   return (
     <span
+      aria-hidden={!hymnNumber}
       className={
         "font-mono-tab min-w-[2.4em] flex-none rounded px-1.5 py-0.5 text-center text-xs font-semibold " +
-        (isComp
-          ? "border border-accent-soft-border bg-accent-soft text-accent-strong"
-          : "border border-border bg-surface-sunk text-text-muted")
+        (!hymnNumber
+          ? "invisible"
+          : isComp
+            ? "border border-accent-soft-border bg-accent-soft text-accent-strong"
+            : "border border-border bg-surface-sunk text-text-muted")
       }
     >
-      {hymnNumber}
+      {hymnNumber || "0"}
     </span>
   );
 }
