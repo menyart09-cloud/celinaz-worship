@@ -36,16 +36,19 @@ function computePosition(btn: HTMLElement) {
     : { left, top: rect.bottom + 4, bottom: undefined, maxHeight: spaceBelow - 4 };
 }
 
-// Always renders the badge's box, even with no hymn number, so titles across
-// a list still line up in a column instead of the ones with no badge
-// shifting left into its space.
+// A fixed (not min-) width, sized for the widest real content ("Comp") —
+// otherwise a 2-digit number, a 3-digit number, "Comp", and a blank
+// placeholder each claim a different box width, and every list's titles
+// drift out of column depending on what's in this cell. Always rendering
+// the box (invisible when there's no hymn number) reserves that same
+// column width instead of the title sliding left into empty space.
 export function HymnBadge({ hymnNumber }: { hymnNumber: string }) {
   const isComp = hymnNumber === "Comp";
   return (
     <span
       aria-hidden={!hymnNumber}
       className={
-        "font-mono-tab min-w-[2.4em] flex-none rounded px-1.5 py-0.5 text-center text-xs font-semibold " +
+        "font-mono-tab w-[3.6em] flex-none rounded px-1.5 py-0.5 text-center text-xs font-semibold " +
         (!hymnNumber
           ? "invisible"
           : isComp
@@ -53,7 +56,7 @@ export function HymnBadge({ hymnNumber }: { hymnNumber: string }) {
             : "border border-border bg-surface-sunk text-text-muted")
       }
     >
-      {hymnNumber || "0"}
+      {hymnNumber}
     </span>
   );
 }
