@@ -23,7 +23,7 @@ export default async function MaintenancePage() {
         </p>
         <a
           href="/api/backup"
-          className="mt-3 inline-flex items-center gap-2 rounded-lg border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-strong"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-accent bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-strong md:inline-flex md:w-auto"
         >
           ⬇ Download Backup
         </a>

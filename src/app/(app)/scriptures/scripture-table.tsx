@@ -75,28 +75,71 @@ export function ScriptureTable({ rows }: { rows: ScriptureHistoryRow[] }) {
           item on an Order of Service.
         </p>
       ) : (
-        // No overflow-hidden here on purpose — it breaks position:sticky on
-        // the <th> below even without actually clipping anything.
-        <div className="rounded-xl border border-border">
-          <table className="w-full border-separate border-spacing-0 text-sm">
-            <thead>
-              <tr>
-                <Th label="Date" sortKey="date" width="120px" sort={sort} onToggle={toggleSort} />
-                <Th label="Scripture" sortKey="scripture" sort={sort} onToggle={toggleSort} />
-              </tr>
-            </thead>
-            <tbody>
-              {shown.map((r, i) => (
-                <tr key={`${r.date}-${i}`} className="hover:bg-surface-alt">
-                  <td className="font-mono-tab border-t border-border px-3.5 py-2.5 font-semibold text-accent-strong">
-                    {isoToMdy(r.date)}
-                  </td>
-                  <td className="border-t border-border px-3.5 py-2.5">{r.scripture}</td>
+        <>
+          {/* Mobile: a 2-column table is still too tight for a full scripture
+              reference — a sort pill row plus a stacked list replaces it. */}
+          <div className="mb-2.5 flex flex-wrap items-center gap-1.5 text-xs font-bold tracking-wide text-text-muted uppercase md:hidden">
+            <span>Sort:</span>
+            {(
+              [
+                { key: "date", label: "Date" },
+                { key: "scripture", label: "Scripture" },
+              ] as { key: SortKey; label: string }[]
+            ).map((opt) => {
+              const active = sort.key === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => toggleSort(opt.key)}
+                  className={
+                    "flex items-center gap-1 rounded-full border px-2.5 py-1 " +
+                    (active
+                      ? "border-accent bg-accent-soft text-accent-strong"
+                      : "border-border-strong text-text-muted hover:border-accent")
+                  }
+                >
+                  {opt.label}
+                  <span className={active ? "text-accent" : "invisible"}>
+                    {active && sort.dir === -1 ? "▼" : "▲"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="overflow-hidden rounded-xl border border-border bg-surface md:hidden">
+            {shown.map((r, i) => (
+              <div key={`${r.date}-${i}`} className={"p-3 " + (i > 0 ? "border-t border-border" : "")}>
+                <div className="font-mono-tab mb-0.5 font-semibold text-accent-strong">{isoToMdy(r.date)}</div>
+                <div className="text-sm">{r.scripture}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: unchanged table. No overflow-hidden here on purpose —
+              it breaks position:sticky on the <th> below even without
+              actually clipping anything. */}
+          <div className="hidden rounded-xl border border-border md:block">
+            <table className="w-full border-separate border-spacing-0 text-sm">
+              <thead>
+                <tr>
+                  <Th label="Date" sortKey="date" width="120px" sort={sort} onToggle={toggleSort} />
+                  <Th label="Scripture" sortKey="scripture" sort={sort} onToggle={toggleSort} />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {shown.map((r, i) => (
+                  <tr key={`${r.date}-${i}`} className="hover:bg-surface-alt">
+                    <td className="font-mono-tab border-t border-border px-3.5 py-2.5 font-semibold text-accent-strong">
+                      {isoToMdy(r.date)}
+                    </td>
+                    <td className="border-t border-border px-3.5 py-2.5">{r.scripture}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

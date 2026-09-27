@@ -51,11 +51,11 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
   return (
     <div
       className={
-        "grid grid-cols-[100px_minmax(0,1.15fr)_minmax(0,1.5fr)] border-t border-border first:border-t-0 " +
+        "flex flex-col border-t border-border first:border-t-0 md:grid md:grid-cols-[100px_minmax(0,1.15fr)_minmax(0,1.5fr)] " +
         (editing ? "bg-accent-soft" : isNoSongsNote ? "bg-warn-soft" : "")
       }
     >
-      <div className="flex flex-col items-start gap-1.5 p-3">
+      <div className="flex flex-row items-center gap-2 p-3 md:flex-col md:items-start md:gap-1.5">
         <span className="font-mono-tab font-semibold whitespace-nowrap text-accent-strong">
           {isoToMdy(service.date)}
         </span>
@@ -74,7 +74,7 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
         </button>
       </div>
 
-      <div className="border-l border-border p-3">
+      <div className="p-3 md:border-l md:border-border">
         {editing ? (
           <div className="flex flex-col gap-1.5">
             <input
@@ -110,7 +110,7 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
         )}
       </div>
 
-      <div className="border-l border-border p-3">
+      <div className="p-3 md:border-l md:border-border">
         {editing ? (
           <div className="flex flex-col gap-2">
             {songs.map((s, i) => (

@@ -30,7 +30,7 @@ export function AddServiceForm() {
     <form action={formAction} className="rounded-xl border border-border bg-surface p-5 shadow-sm">
       <input type="hidden" name="songs" value={JSON.stringify(songs)} />
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label className="mb-1 block text-xs font-bold tracking-wide text-text-muted uppercase">
             Date
@@ -74,57 +74,113 @@ export function AddServiceForm() {
         <h3 className="mb-2 text-sm font-bold">Setlist</h3>
         <div className="flex flex-col gap-2">
           {songs.map((s, i) => (
-            <div
-              key={i}
-              className="grid grid-cols-[56px_minmax(0,1fr)_64px_24px_36px] items-center gap-1.5 sm:grid-cols-[74px_minmax(0,1fr)_110px_24px_36px] sm:gap-2"
-            >
-              <input
-                value={s.hymnNumber}
-                onChange={(e) => updateSong(i, "hymnNumber", e.target.value)}
-                placeholder="#"
-                className="font-mono-tab min-w-0 rounded-md border border-border-strong bg-surface px-2 py-1.5 text-center text-sm"
-              />
-              <input
-                value={s.title}
-                onChange={(e) => updateSong(i, "title", e.target.value)}
-                placeholder="Song title"
-                list="song-title-options"
-                className="min-w-0 rounded-md border border-border-strong bg-surface px-2 py-1.5 text-sm"
-              />
-              <input
-                value={s.verses}
-                onChange={(e) => updateSong(i, "verses", e.target.value)}
-                placeholder="verses"
-                className="min-w-0 rounded-md border border-border-strong bg-surface px-2 py-1.5 text-sm"
-              />
-              <div className="flex flex-col">
+            <div key={i}>
+              {/* Mobile: a stacked mini-card — five fields in one row is too
+                  cramped below md, so hymn#/move/remove share a top row and
+                  title/verses each get their own full-width line. */}
+              <div className="flex flex-col gap-2 rounded-lg border border-border-strong p-2.5 md:hidden">
+                <div className="flex items-center gap-2">
+                  <input
+                    value={s.hymnNumber}
+                    onChange={(e) => updateSong(i, "hymnNumber", e.target.value)}
+                    placeholder="#"
+                    className="font-mono-tab w-16 flex-none rounded-md border border-border-strong bg-surface px-2 py-1.5 text-center text-sm"
+                  />
+                  <div className="flex-1" />
+                  <div className="flex flex-none flex-col">
+                    <button
+                      type="button"
+                      onClick={() => moveSong(i, "up")}
+                      disabled={i === 0}
+                      aria-label="Move song up"
+                      className="flex h-4 w-6 items-center justify-center text-xs text-text-faint hover:text-accent-strong disabled:opacity-30"
+                    >
+                      ▲
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveSong(i, "down")}
+                      disabled={i === songs.length - 1}
+                      aria-label="Move song down"
+                      className="flex h-4 w-6 items-center justify-center text-xs text-text-faint hover:text-accent-strong disabled:opacity-30"
+                    >
+                      ▼
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSongs((prev) => prev.filter((_, idx) => idx !== i))}
+                    aria-label="Remove song"
+                    className="flex h-9 w-9 flex-none items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <input
+                  value={s.title}
+                  onChange={(e) => updateSong(i, "title", e.target.value)}
+                  placeholder="Song title"
+                  list="song-title-options"
+                  className="w-full rounded-md border border-border-strong bg-surface px-2 py-1.5 text-sm"
+                />
+                <input
+                  value={s.verses}
+                  onChange={(e) => updateSong(i, "verses", e.target.value)}
+                  placeholder="verses"
+                  className="w-full rounded-md border border-border-strong bg-surface px-2 py-1.5 text-sm"
+                />
+              </div>
+
+              {/* Desktop: unchanged single-row grid. */}
+              <div className="hidden md:grid md:grid-cols-[74px_minmax(0,1fr)_110px_24px_36px] md:items-center md:gap-2">
+                <input
+                  value={s.hymnNumber}
+                  onChange={(e) => updateSong(i, "hymnNumber", e.target.value)}
+                  placeholder="#"
+                  className="font-mono-tab min-w-0 rounded-md border border-border-strong bg-surface px-2 py-1.5 text-center text-sm"
+                />
+                <input
+                  value={s.title}
+                  onChange={(e) => updateSong(i, "title", e.target.value)}
+                  placeholder="Song title"
+                  list="song-title-options"
+                  className="min-w-0 rounded-md border border-border-strong bg-surface px-2 py-1.5 text-sm"
+                />
+                <input
+                  value={s.verses}
+                  onChange={(e) => updateSong(i, "verses", e.target.value)}
+                  placeholder="verses"
+                  className="min-w-0 rounded-md border border-border-strong bg-surface px-2 py-1.5 text-sm"
+                />
+                <div className="flex flex-col">
+                  <button
+                    type="button"
+                    onClick={() => moveSong(i, "up")}
+                    disabled={i === 0}
+                    aria-label="Move song up"
+                    className="flex h-4 w-6 items-center justify-center text-xs text-text-faint hover:text-accent-strong disabled:opacity-30"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveSong(i, "down")}
+                    disabled={i === songs.length - 1}
+                    aria-label="Move song down"
+                    className="flex h-4 w-6 items-center justify-center text-xs text-text-faint hover:text-accent-strong disabled:opacity-30"
+                  >
+                    ▼
+                  </button>
+                </div>
                 <button
                   type="button"
-                  onClick={() => moveSong(i, "up")}
-                  disabled={i === 0}
-                  aria-label="Move song up"
-                  className="flex h-4 w-6 items-center justify-center text-xs text-text-faint hover:text-accent-strong disabled:opacity-30"
+                  onClick={() => setSongs((prev) => prev.filter((_, idx) => idx !== i))}
+                  aria-label="Remove song"
+                  className="flex h-9 w-9 items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent"
                 >
-                  ▲
-                </button>
-                <button
-                  type="button"
-                  onClick={() => moveSong(i, "down")}
-                  disabled={i === songs.length - 1}
-                  aria-label="Move song down"
-                  className="flex h-4 w-6 items-center justify-center text-xs text-text-faint hover:text-accent-strong disabled:opacity-30"
-                >
-                  ▼
+                  ✕
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setSongs((prev) => prev.filter((_, idx) => idx !== i))}
-                aria-label="Remove song"
-                className="flex h-9 w-9 items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent"
-              >
-                ✕
-              </button>
             </div>
           ))}
         </div>

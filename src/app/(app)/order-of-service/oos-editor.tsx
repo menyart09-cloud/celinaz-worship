@@ -181,8 +181,13 @@ function OosRow({
   }
 
   return (
-    <div className={"flex gap-3 border-t border-border p-4 first:border-t-0 " + (isEven ? "bg-surface-alt" : "")}>
-      <div className="no-print flex flex-none flex-col gap-1 pt-0.5">
+    <div
+      className={
+        "flex flex-col gap-2 border-t border-border p-4 first:border-t-0 md:flex-row md:gap-3 " +
+        (isEven ? "bg-surface-alt" : "")
+      }
+    >
+      <div className="no-print flex flex-none gap-1 md:flex-col md:pt-0.5">
         <button
           type="button"
           onClick={() => startTransition(() => moveItemAction(item.id, "up"))}

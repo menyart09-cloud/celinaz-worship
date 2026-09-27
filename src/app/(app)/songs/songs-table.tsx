@@ -89,9 +89,71 @@ export function SongsTable({ songs }: { songs: SongLibraryRow[] }) {
         placeholder="Filter by title or hymn #…"
         className="mb-3.5 w-full rounded-lg border border-border-strong bg-surface px-3.5 py-2.5 text-sm sm:max-w-xs"
       />
-      {/* No overflow-hidden here on purpose — it breaks position:sticky on
-          the <th> below even without actually clipping anything. */}
-      <div className="rounded-xl border border-border">
+      {/* Mobile: a 4-column table doesn't fit — a sort pill row plus a card
+          per song replaces it below md. */}
+      <div className="mb-2.5 flex flex-wrap items-center gap-1.5 text-xs font-bold tracking-wide text-text-muted uppercase md:hidden">
+        <span>Sort:</span>
+        {(
+          [
+            { key: "title", label: "Title" },
+            { key: "hymn", label: "Hymn #" },
+            { key: "source", label: "Source" },
+            { key: "uses", label: "Usage" },
+          ] as { key: SortKey; label: string }[]
+        ).map((opt) => {
+          const active = sort.key === opt.key;
+          return (
+            <button
+              key={opt.key}
+              type="button"
+              onClick={() => toggleSort(opt.key)}
+              className={
+                "flex items-center gap-1 rounded-full border px-2.5 py-1 " +
+                (active
+                  ? "border-accent bg-accent-soft text-accent-strong"
+                  : "border-border-strong text-text-muted hover:border-accent")
+              }
+            >
+              {opt.label}
+              <span className={active ? "text-accent" : "invisible"}>{active && sort.dir === -1 ? "▼" : "▲"}</span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="overflow-hidden rounded-xl border border-border bg-surface md:hidden">
+        {rows.length === 0 ? (
+          <p className="p-6 text-center text-sm text-text-faint italic">No songs match.</p>
+        ) : (
+          rows.map((s, i) => (
+            <div key={s.id} className={"p-3 " + (i > 0 ? "border-t border-border" : "")}>
+              {/* The hymn/Comp badge on the chip itself already says what the
+                  desktop table's separate Source column spells out — no need
+                  to repeat "Comp" twice right next to each other. */}
+              <SongChip hymnNumber={s.hymnNumber} title={s.title} />
+              <div className="mt-1 text-xs text-text-muted">
+                {s.useCount > 0 ? (
+                  <>
+                    {s.useCount} {s.useCount === 1 ? "use" : "uses"} ·{" "}
+                    {s.usedDates.map((d, di) => (
+                      <span key={d} className="font-mono-tab">
+                        {di > 0 ? " " : ""}
+                        {isoToMdy(d)}
+                      </span>
+                    ))}
+                  </>
+                ) : (
+                  <span className="text-text-faint italic">never used</span>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop: unchanged table. No overflow-hidden here on purpose — it
+          breaks position:sticky on the <th> below even without actually
+          clipping anything. */}
+      <div className="hidden rounded-xl border border-border md:block">
         <table className="w-full border-separate border-spacing-0 text-sm">
           <thead>
             <tr>
