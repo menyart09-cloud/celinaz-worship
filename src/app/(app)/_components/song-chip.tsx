@@ -137,7 +137,7 @@ export function SongChip({
         ref={btnRef}
         type="button"
         onClick={toggle}
-        className="-mx-1 inline-flex items-center gap-2 rounded px-1 py-0.5 text-left hover:bg-accent-soft"
+        className="-ml-3 -mr-1 inline-flex items-center gap-2 rounded px-1 py-0.5 text-left hover:bg-accent-soft"
       >
         {!hideBadge && <HymnBadge hymnNumber={hymnNumber} />}
         <span className="font-medium">{title}</span>
