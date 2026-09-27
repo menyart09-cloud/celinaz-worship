@@ -8,10 +8,7 @@ import { chorusItems } from "@/db/schema";
 export async function addChorusItemAction(title: string, hymnNumber: string) {
   const trimmed = title.trim();
   if (!trimmed) return;
-  // Most items on this list genuinely have no hymnal number, so leaving the
-  // field blank still means "Comp" (played from the computer) — but a real
-  // number typed in overrides that.
-  await db.insert(chorusItems).values({ hymnNumber: hymnNumber.trim() || "Comp", title: trimmed });
+  await db.insert(chorusItems).values({ hymnNumber: hymnNumber.trim(), title: trimmed });
   revalidatePath("/choruses");
 }
 
@@ -20,7 +17,7 @@ export async function updateChorusItemAction(id: string, title: string, hymnNumb
   if (!trimmed) return;
   await db
     .update(chorusItems)
-    .set({ hymnNumber: hymnNumber.trim() || "Comp", title: trimmed })
+    .set({ hymnNumber: hymnNumber.trim(), title: trimmed })
     .where(eq(chorusItems.id, id));
   revalidatePath("/choruses");
 }

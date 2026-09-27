@@ -73,7 +73,7 @@ export function ChorusesClient({ items }: { items: Item[] }) {
             onChange={(e) => setHymnNumber(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && add()}
             placeholder="#"
-            title="Hymn # (leave blank for Comp)"
+            title="Hymn # (leave blank for a chorus)"
             className="font-mono-tab w-16 flex-none rounded-lg border border-border-strong bg-surface px-2 py-2.5 text-center text-sm"
           />
           <button
@@ -93,7 +93,7 @@ export function ChorusesClient({ items }: { items: Item[] }) {
           onChange={(e) => setHymnNumber(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && add()}
           placeholder="#"
-          title="Hymn # (leave blank for Comp)"
+          title="Hymn # (leave blank for a chorus)"
           className="font-mono-tab w-16 flex-none rounded-lg border border-border-strong bg-surface px-2 py-2.5 text-center text-sm"
         />
         <input
@@ -179,7 +179,7 @@ function ChorusRow({ item, isEven }: { item: Item; isEven: boolean }) {
           onChange={(e) => setHymnNumber(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && save()}
           placeholder="#"
-          title="Hymn # (leave blank for Comp)"
+          title="Hymn # (leave blank for a chorus)"
           className="font-mono-tab w-16 flex-none rounded-md border border-border-strong bg-surface px-2 py-1.5 text-center text-sm"
         />
         <input
