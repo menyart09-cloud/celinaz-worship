@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { OosItemWithSongs, SongLibraryRow } from "@/lib/queries";
 import { isoToMdy } from "@/lib/dates";
 import { SongPickerButton } from "./song-picker";
@@ -31,9 +32,34 @@ export function OosEditor({
 }) {
   const [pending, startTransition] = useTransition();
   const [previewing, setPreviewing] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   function addItem(afterItemId: string | null) {
     startTransition(() => addItemAction(date, afterItemId));
+  }
+
+  // On iOS, a home-screen-installed app runs with no Safari chrome, and
+  // window.print() silently no-ops there — there's no browser UI left to host
+  // the print sheet. handlePrint detects that and instead reopens this page
+  // in an actual Safari tab (window.open reliably escapes standalone mode),
+  // with ?autoprint=1 so the effect below fires the print dialog once it
+  // loads there.
+  useEffect(() => {
+    if (searchParams.get("autoprint") !== "1") return;
+    window.print();
+    router.replace(`/order-of-service?date=${encodeURIComponent(date)}`, { scroll: false });
+  }, [searchParams, date, router]);
+
+  function handlePrint() {
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+    if (isStandalone) {
+      window.open(`/order-of-service?date=${encodeURIComponent(date)}&autoprint=1`, "_blank");
+    } else {
+      window.print();
+    }
   }
 
   return (
@@ -49,7 +75,7 @@ export function OosEditor({
           </button>
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={handlePrint}
             className="rounded-lg border border-accent bg-accent px-3 py-1.5 text-sm font-semibold text-white hover:bg-accent-strong"
           >
             🖨 Print
@@ -84,7 +110,7 @@ export function OosEditor({
             </button>
             <button
               type="button"
-              onClick={() => window.print()}
+              onClick={handlePrint}
               className="rounded-lg border border-accent bg-accent px-3 py-1.5 text-sm font-semibold text-white hover:bg-accent-strong"
             >
               🖨 Print
