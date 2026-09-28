@@ -32,6 +32,7 @@ export function OosEditor({
 }) {
   const [pending, startTransition] = useTransition();
   const [previewing, setPreviewing] = useState(false);
+  const [justCopied, setJustCopied] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -59,6 +60,37 @@ export function OosEditor({
       window.open(`/order-of-service?date=${encodeURIComponent(date)}&autoprint=1`, "_blank");
     } else {
       window.print();
+    }
+  }
+
+  async function copyToClipboard(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setJustCopied(true);
+      setTimeout(() => setJustCopied(false), 1500);
+    } catch {
+      // Nothing more we can do if the clipboard write itself is denied
+      // (permissions, non-secure context) — the share attempt already failed
+      // or never applied, so this is the last resort either way.
+    }
+  }
+
+  // navigator.share hands the text to the OS's own share sheet (Messages,
+  // Mail, AirDrop…) so there's nothing left to pick and paste — but it's not
+  // supported everywhere (Windows has no native share target for it), so
+  // browsers without it fall back to just copying the text instead.
+  async function handleShare() {
+    const text = buildSongsShareText(date, items);
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({ text });
+      } catch (err) {
+        // AbortError just means the user closed the share sheet without
+        // picking anything — not a failure worth falling back for.
+        if ((err as Error)?.name !== "AbortError") await copyToClipboard(text);
+      }
+    } else {
+      await copyToClipboard(text);
     }
   }
 
@@ -115,6 +147,16 @@ export function OosEditor({
             >
               🖨 Print
             </button>
+            <button
+              type="button"
+              onClick={handleShare}
+              className="rounded-lg border border-accent bg-surface px-3 py-1.5 text-sm font-semibold text-accent-strong hover:bg-accent-soft"
+            >
+              📤 Share list
+            </button>
+            {justCopied && (
+              <span className="no-print text-xs font-semibold text-text-faint">Copied!</span>
+            )}
           </div>
           <p className="no-print mb-4 text-xs text-text-faint">
             &quot;Start from last week&quot; keeps the run sheet, clears just the songs. &quot;Pull
@@ -338,6 +380,30 @@ function OosRow({
 function songTag(hymnNumber: string): string {
   if (!hymnNumber) return "";
   return hymnNumber === "Comp" ? "(comp)" : `(#${hymnNumber})`;
+}
+
+// Just the songs, not the whole run sheet — this is what actually gets
+// texted to the praise team, so prayers/announcements/assignees stay out of
+// it. Same "Opening Song inlines its one song" convention as PrintItem, for
+// the same reason: that's the shape the owner already texts by hand.
+function buildSongsShareText(date: string, items: OosItemWithSongs[]): string {
+  const songItems = items.filter((item) => item.songs.length > 0);
+  if (songItems.length === 0) {
+    return `🎵 ${isoToMdy(date)} — no songs picked yet.`;
+  }
+
+  const lines = [`🎵 ${isoToMdy(date)} — this Sunday's songs:`];
+  for (const item of songItems) {
+    const label = item.label.replace(/:+\s*$/, "");
+    const inlineSong = label === "Opening Song" && item.songs.length === 1 ? item.songs[0] : null;
+    if (inlineSong) {
+      lines.push(`${label}: ${inlineSong.title} ${songTag(inlineSong.hymnNumber)}`.trim());
+    } else {
+      lines.push(`${label}:`);
+      item.songs.forEach((s, i) => lines.push(`${i + 1}. ${s.title} ${songTag(s.hymnNumber)}`.trim()));
+    }
+  }
+  return lines.join("\n");
 }
 
 // Plain-text run sheet: one label line per item, an optional note bullet, and
