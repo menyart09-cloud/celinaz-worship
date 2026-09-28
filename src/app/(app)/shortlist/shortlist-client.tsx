@@ -11,8 +11,8 @@ type Sort = { key: SortKey; dir: 1 | -1 };
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "title", label: "Title" },
-  { key: "added", label: "Recently Added" },
   { key: "hymn", label: "Hymn #" },
+  { key: "added", label: "Recently Added" },
 ];
 
 export function ShortlistClient({ items }: { items: Item[] }) {
