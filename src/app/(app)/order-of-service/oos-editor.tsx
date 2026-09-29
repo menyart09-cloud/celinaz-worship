@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
+import jsPDF from "jspdf";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { OosItemWithSongs, SongLibraryRow } from "@/lib/queries";
 import { isoToMdy } from "@/lib/dates";
@@ -16,6 +17,28 @@ import {
   copyFromLastWeekAction,
   pullSongsFromLogAction,
 } from "./actions";
+
+function noopSubscribe() {
+  return () => {};
+}
+
+// File-sharing via the Web Share API is a narrower, newer capability than
+// text-sharing, so the "Share" option in the PDF menu only appears where
+// it'll actually work — no dead button. navigator isn't available during
+// SSR, so this reads as a client-only external value (useSyncExternalStore),
+// same pattern NavPills already uses for sessionStorage.
+function getCanShareFiles() {
+  try {
+    const probe = new File([""], "probe.pdf", { type: "application/pdf" });
+    return Boolean(navigator.canShare?.({ files: [probe] }));
+  } catch {
+    return false;
+  }
+}
+
+function getServerCanShareFiles() {
+  return false;
+}
 
 export function OosEditor({
   date,
@@ -33,8 +56,22 @@ export function OosEditor({
   const [pending, startTransition] = useTransition();
   const [previewing, setPreviewing] = useState(false);
   const [justCopied, setJustCopied] = useState(false);
+  const [pdfMenuOpen, setPdfMenuOpen] = useState(false);
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const canShareFiles = useSyncExternalStore(noopSubscribe, getCanShareFiles, getServerCanShareFiles);
+  const pdfMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (!pdfMenuOpen) return;
+    function onDocClick(e: MouseEvent) {
+      if (pdfMenuRef.current?.contains(e.target as Node)) return;
+      setPdfMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [pdfMenuOpen]);
 
   function addItem(afterItemId: string | null) {
     startTransition(() => addItemAction(date, afterItemId));
@@ -92,6 +129,40 @@ export function OosEditor({
     } else {
       await copyToClipboard(text);
     }
+  }
+
+  function pdfFileName() {
+    return `order-of-service-${date}.pdf`;
+  }
+
+  function handleCreatePdf() {
+    setPdfBlob(buildOrderOfServicePdf(date, items));
+    setPdfMenuOpen(true);
+  }
+
+  function handleDownloadPdf() {
+    if (!pdfBlob) return;
+    const url = URL.createObjectURL(pdfBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = pdfFileName();
+    a.click();
+    URL.revokeObjectURL(url);
+    setPdfMenuOpen(false);
+  }
+
+  async function handleSharePdf() {
+    if (!pdfBlob) return;
+    const file = new File([pdfBlob], pdfFileName(), { type: "application/pdf" });
+    try {
+      await navigator.share({ files: [file] });
+    } catch (err) {
+      if ((err as Error)?.name !== "AbortError") {
+        handleDownloadPdf();
+        return;
+      }
+    }
+    setPdfMenuOpen(false);
   }
 
   return (
@@ -157,6 +228,35 @@ export function OosEditor({
             {justCopied && (
               <span className="no-print text-xs font-semibold text-text-faint">Copied!</span>
             )}
+            <div ref={pdfMenuRef} className="relative">
+              <button
+                type="button"
+                onClick={handleCreatePdf}
+                className="rounded-lg border border-accent bg-surface px-3 py-1.5 text-sm font-semibold text-accent-strong hover:bg-accent-soft"
+              >
+                📄 Create PDF
+              </button>
+              {pdfMenuOpen && (
+                <div className="absolute right-0 top-full z-20 mt-1 w-56 rounded-lg border border-border-strong bg-surface p-1.5 shadow-lg">
+                  <button
+                    type="button"
+                    onClick={handleDownloadPdf}
+                    className="block w-full rounded-md px-2.5 py-2 text-left text-sm font-semibold text-foreground hover:bg-accent-soft"
+                  >
+                    ⬇ Download PDF
+                  </button>
+                  {canShareFiles && (
+                    <button
+                      type="button"
+                      onClick={handleSharePdf}
+                      className="block w-full rounded-md px-2.5 py-2 text-left text-sm font-semibold text-foreground hover:bg-accent-soft"
+                    >
+                      💬 Share via Messages/Mail
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           <p className="no-print mb-4 text-xs text-text-faint">
             &quot;Start from last week&quot; keeps the run sheet, clears just the songs. &quot;Pull
@@ -404,6 +504,70 @@ function buildSongsShareText(date: string, items: OosItemWithSongs[]): string {
     }
   }
   return lines.join("\n");
+}
+
+// Same content and line-by-line shape as PrintItem/PrintView (the full run
+// sheet, not just songs — this is "the Order of Service", not the text-share
+// summary), just drawn directly with jsPDF instead of relying on the
+// browser's print engine. That trades away the page's actual Comic Neue
+// font (jsPDF ships standard PDF fonts only; embedding a custom TTF is more
+// than this needs) for a PDF that's generated instantly, client-side, with
+// no server round-trip.
+function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): Blob {
+  const doc = new jsPDF({ unit: "pt", format: "letter" });
+  const margin = 36;
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const maxWidth = pageWidth - margin * 2;
+  let y = margin;
+
+  function addLine(text: string, opts: { size: number; bold?: boolean; indent?: number }) {
+    const indent = opts.indent ?? 0;
+    doc.setFont("helvetica", opts.bold ? "bold" : "normal");
+    doc.setFontSize(opts.size);
+    const lineHeight = opts.size * 1.35;
+    const wrapped = doc.splitTextToSize(text, maxWidth - indent) as string[];
+    for (const line of wrapped) {
+      if (y + lineHeight > pageHeight - margin) {
+        doc.addPage();
+        y = margin;
+      }
+      doc.text(line, margin + indent, y);
+      y += lineHeight;
+    }
+  }
+
+  addLine(`${isoToMdy(date)} Order of Service`, { size: 20, bold: true });
+  y += 8;
+
+  if (items.length === 0) {
+    addLine("Nothing here yet.", { size: 14 });
+  } else {
+    for (const item of items) {
+      const label = item.label.replace(/:+\s*$/, "");
+      const inlineSong =
+        label === "Opening Song" && !item.assignee && item.songs.length === 1 ? item.songs[0] : null;
+      const listSongs = inlineSong ? [] : item.songs;
+
+      let headLine = label;
+      if (item.assignee) {
+        headLine += `: ${item.assignee}`;
+      } else if (inlineSong) {
+        headLine += `: ${inlineSong.title} ${songTag(inlineSong.hymnNumber)}`.trimEnd();
+      } else if (item.detail || listSongs.length > 0) {
+        headLine += ":";
+      }
+      addLine(headLine, { size: 14, bold: true });
+
+      if (item.detail) addLine(`• ${item.detail}`, { size: 14, indent: 16 });
+      listSongs.forEach((s, i) =>
+        addLine(`${i + 1}. ${s.title} ${songTag(s.hymnNumber)}`.trimEnd(), { size: 14, indent: 16 }),
+      );
+      y += 10;
+    }
+  }
+
+  return doc.output("blob");
 }
 
 // Plain-text run sheet: one label line per item, an optional note bullet, and
