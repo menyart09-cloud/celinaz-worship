@@ -408,6 +408,31 @@ function OosRow({
     };
   }, [flush]);
 
+  // This row keeps its own id across re-renders (React reuses the same
+  // instance, useState's initial value only applies once), so a field
+  // changed by something OTHER than this row's own inputs — "Pull from
+  // Service Log" overwriting Message's detail is the one case today — would
+  // otherwise never show up here: the input would keep displaying whatever
+  // was there before, even though the database already has the new value.
+  // Comparing against `saved` (what WE last wrote) tells an external change
+  // apart from the echo of our own save landing back through props.
+  useEffect(() => {
+    const incoming: Record<Field, string> = {
+      label: item.label,
+      assignee: item.assignee ?? "",
+      detail: item.detail ?? "",
+    };
+    (Object.keys(incoming) as Field[]).forEach((field) => {
+      const value = incoming[field];
+      if (value === saved.current[field] || value === latest.current[field]) return;
+      latest.current[field] = value;
+      saved.current[field] = value;
+      if (field === "label") setLabel(value);
+      else if (field === "assignee") setAssignee(value);
+      else setDetail(value);
+    });
+  }, [item.label, item.assignee, item.detail]);
+
   function edit(field: Field, value: string) {
     latest.current[field] = value;
     if (field === "label") setLabel(value);
