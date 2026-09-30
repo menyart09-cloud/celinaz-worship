@@ -60,7 +60,7 @@ export default async function OrderOfServicePage({
         items={items}
         assigneeNames={assigneeNames}
         library={library}
-        hasMatchingService={Boolean(service?.songs.length)}
+        hasMatchingService={Boolean(service && (service.songs.length || service.sermon || service.scripture))}
       />
     </div>
   );

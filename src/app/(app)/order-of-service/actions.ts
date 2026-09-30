@@ -81,9 +81,12 @@ export async function updateItemFieldAction(
   field: "label" | "assignee" | "detail",
   value: string,
 ) {
+  const trimmed = value.trim();
+  // label is NOT NULL, so a blank title is stored as "" — null would throw
+  // and crash the page. The other fields are nullable.
   await db
     .update(oosItems)
-    .set({ [field]: value.trim() || null })
+    .set({ [field]: field === "label" ? trimmed : trimmed || null })
     .where(eq(oosItems.id, itemId));
   revalidateOos();
 }
