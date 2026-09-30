@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { OosItemWithSongs, SongLibraryRow } from "@/lib/queries";
 import { isoToMdy } from "@/lib/dates";
 import { SongPickerButton } from "./song-picker";
+import { HymnBadge } from "../_components/song-chip";
 import {
   addItemAction,
   removeItemAction,
@@ -545,17 +546,15 @@ function OosRow({
           {item.songs.map((s) => (
             <span
               key={s.linkId}
-              className="flex items-center gap-1.5 rounded-lg border border-accent-soft-border bg-accent-soft py-1.5 pr-1 pl-1.5 text-sm"
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-surface-sunk py-1.5 pr-1 pl-1.5 text-sm"
             >
-              <span className="font-mono-tab rounded bg-surface px-1.5 py-0.5 text-xs text-text-muted">
-                {s.hymnNumber}
-              </span>
-              <span className="font-medium text-accent-strong">{s.title}</span>
+              <HymnBadge hymnNumber={s.hymnNumber} />
+              <span className="font-medium">{s.title}</span>
               <button
                 type="button"
                 aria-label="Remove song"
                 onClick={() => startTransition(() => removeSongFromItemAction(s.linkId))}
-                className="no-print flex h-7 w-7 items-center justify-center rounded text-accent-strong opacity-60 hover:bg-black/10 hover:opacity-100"
+                className="no-print flex h-7 w-7 items-center justify-center rounded text-text-faint hover:bg-accent-soft hover:text-accent"
               >
                 ✕
               </button>
