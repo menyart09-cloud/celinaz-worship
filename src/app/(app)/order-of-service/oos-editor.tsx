@@ -202,6 +202,7 @@ export function OosEditor({
               type="button"
               onClick={() => startTransition(() => pullSongsFromLogAction(date))}
               disabled={pending || !hasMatchingService}
+              title={hasMatchingService ? undefined : "Nothing logged for this date in the Service Log yet"}
               className="rounded-lg border border-border-strong bg-surface px-3 py-1.5 text-sm font-semibold hover:border-accent disabled:opacity-50"
             >
               🔄 Pull from Service Log
@@ -263,8 +264,8 @@ export function OosEditor({
           </div>
           <p className="no-print mb-4 text-xs text-text-faint">
             &quot;Start from last week&quot; keeps the run sheet, clears just the songs. &quot;Pull
-            songs&quot; fills Opening Song &amp; Worship from what&apos;s already logged for this
-            date.
+            from Service Log&quot; fills Opening Song &amp; Worship, plus the pastor&apos;s message
+            and scripture under Message, from what&apos;s already logged for this date.
           </p>
 
           <div className="no-print mb-3">
