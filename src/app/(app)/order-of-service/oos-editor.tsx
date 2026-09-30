@@ -397,11 +397,7 @@ function OosRow({
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            onBlur={() => {
-              // A title can't be blank — put the saved one back instead.
-              if (!label.trim()) setLabel(item.label);
-              else commitField("label", label);
-            }}
+            onBlur={() => commitField("label", label)}
             className="min-w-[150px] flex-1 rounded-md border border-transparent px-1 py-0.5 font-bold hover:border-border-strong hover:bg-surface focus:border-border-strong focus:bg-surface focus:outline-none"
           />
           {(pending || justSaved) && (
