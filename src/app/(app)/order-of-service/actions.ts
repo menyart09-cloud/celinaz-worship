@@ -26,11 +26,12 @@ function revalidateOos() {
   revalidatePath("/order-of-service");
 }
 
-// Matches item labels loosely — a trailing colon typed by hand (or stray
-// spacing/casing) shouldn't make "Worship:" fail to match "Worship" and
-// silently skip the pull.
+// Matches item labels loosely — stray spacing/casing, or a colon (with
+// anything after it, since some run sheets have the assignee typed straight
+// into the label, e.g. "Message: Pastor Dave") shouldn't make a label fail
+// to match "Worship" or "Message" and silently skip the pull.
 function normalizeLabel(label: string): string {
-  return label.replace(/:+\s*$/, "").trim().toLowerCase();
+  return label.split(":")[0].trim().toLowerCase();
 }
 
 // Inserts a new blank item right after `afterItemId` (or at the very top when
