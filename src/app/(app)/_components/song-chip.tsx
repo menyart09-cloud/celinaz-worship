@@ -36,19 +36,23 @@ function computePosition(btn: HTMLElement) {
     : { left, top: rect.bottom + 4, bottom: undefined, maxHeight: spaceBelow - 4 };
 }
 
-// A fixed (not min-) width, sized for the widest real content ("Comp") —
-// otherwise a 2-digit number, a 3-digit number, "Comp", and a blank
-// placeholder each claim a different box width, and every list's titles
-// drift out of column depending on what's in this cell. Always rendering
-// the box (invisible when there's no hymn number) reserves that same
-// column width instead of the title sliding left into empty space.
+// A fixed (not min-) width — otherwise a 2-digit number, a 3-digit number,
+// "Comp", and a blank placeholder each claim a different box width, and
+// every list's titles drift out of column depending on what's in this
+// cell. Always rendering the box (invisible when there's no hymn number)
+// reserves that same column width instead of the title sliding left into
+// empty space. w-16 matches the "#" input's own width in the add-forms, and
+// comfortably fits real free-text values like "Comp" or "Chorus" — this
+// field has no length limit, so `truncate` is a safety net for anything
+// longer than that rather than letting it run into the title next to it.
 export function HymnBadge({ hymnNumber }: { hymnNumber: string }) {
   const isComp = hymnNumber === "Comp";
   return (
     <span
       aria-hidden={!hymnNumber}
+      title={hymnNumber || undefined}
       className={
-        "font-mono-tab w-[3.6em] flex-none rounded px-1.5 py-0.5 text-center text-xs font-semibold " +
+        "font-mono-tab w-16 flex-none truncate rounded px-1.5 py-0.5 text-center text-xs font-semibold " +
         (!hymnNumber
           ? "invisible"
           : isComp
