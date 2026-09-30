@@ -171,7 +171,7 @@ export function OosEditor({
   return (
     <div>
       {previewing ? (
-        <div className="no-print mb-4 flex items-center justify-between gap-2">
+        <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-2">
           <button
             type="button"
             onClick={() => setPreviewing(false)}
@@ -179,13 +179,44 @@ export function OosEditor({
           >
             ← Back to editing
           </button>
-          <button
-            type="button"
-            onClick={handlePrint}
-            className="rounded-lg border border-accent bg-accent px-3 py-1.5 text-sm font-semibold text-white hover:bg-accent-strong"
-          >
-            🖨 Print
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="rounded-lg border border-accent bg-accent px-3 py-1.5 text-sm font-semibold text-white hover:bg-accent-strong"
+            >
+              🖨 Print
+            </button>
+            <div ref={pdfMenuRef} className="relative">
+              <button
+                type="button"
+                onClick={handleCreatePdf}
+                className="rounded-lg border border-accent bg-surface px-3 py-1.5 text-sm font-semibold text-accent-strong hover:bg-accent-soft"
+              >
+                📄 Create PDF
+              </button>
+              {pdfMenuOpen && (
+                <div className="absolute right-0 top-full z-20 mt-1 w-56 rounded-lg border border-border-strong bg-surface p-1.5 shadow-lg">
+                  <button
+                    type="button"
+                    onClick={handleDownloadPdf}
+                    className="block w-full rounded-md px-2.5 py-2 text-left text-sm font-semibold text-foreground hover:bg-accent-soft"
+                  >
+                    ⬇ Download PDF
+                  </button>
+                  {canShareFiles && (
+                    <button
+                      type="button"
+                      onClick={handleSharePdf}
+                      className="block w-full rounded-md px-2.5 py-2 text-left text-sm font-semibold text-foreground hover:bg-accent-soft"
+                    >
+                      💬 Share via Messages/Mail
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       ) : (
         <div className="print:hidden">
@@ -217,50 +248,14 @@ export function OosEditor({
             </button>
             <button
               type="button"
-              onClick={handlePrint}
-              className="rounded-lg border border-accent bg-accent px-3 py-1.5 text-sm font-semibold text-white hover:bg-accent-strong"
-            >
-              🖨 Print
-            </button>
-            <button
-              type="button"
               onClick={handleShare}
               className="rounded-lg border border-accent bg-surface px-3 py-1.5 text-sm font-semibold text-accent-strong hover:bg-accent-soft"
             >
-              📤 Share list
+              💬 Text list
             </button>
             {justCopied && (
               <span className="no-print text-xs font-semibold text-text-faint">Copied!</span>
             )}
-            <div ref={pdfMenuRef} className="relative">
-              <button
-                type="button"
-                onClick={handleCreatePdf}
-                className="rounded-lg border border-accent bg-surface px-3 py-1.5 text-sm font-semibold text-accent-strong hover:bg-accent-soft"
-              >
-                📄 Create PDF
-              </button>
-              {pdfMenuOpen && (
-                <div className="absolute right-0 top-full z-20 mt-1 w-56 rounded-lg border border-border-strong bg-surface p-1.5 shadow-lg">
-                  <button
-                    type="button"
-                    onClick={handleDownloadPdf}
-                    className="block w-full rounded-md px-2.5 py-2 text-left text-sm font-semibold text-foreground hover:bg-accent-soft"
-                  >
-                    ⬇ Download PDF
-                  </button>
-                  {canShareFiles && (
-                    <button
-                      type="button"
-                      onClick={handleSharePdf}
-                      className="block w-full rounded-md px-2.5 py-2 text-left text-sm font-semibold text-foreground hover:bg-accent-soft"
-                    >
-                      💬 Share via Messages/Mail
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
           </div>
           <p className="no-print mb-4 text-xs text-text-faint">
             &quot;Start from last week&quot; keeps the run sheet, clears just the songs. &quot;Pull
