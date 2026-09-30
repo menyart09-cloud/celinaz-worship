@@ -81,9 +81,13 @@ export async function updateItemFieldAction(
   field: "label" | "assignee" | "detail",
   value: string,
 ) {
+  const trimmed = value.trim();
+  // label is NOT NULL — an emptied title must not be written as null (that
+  // throws and crashes the page), so a blank label is simply ignored.
+  if (field === "label" && !trimmed) return;
   await db
     .update(oosItems)
-    .set({ [field]: value.trim() || null })
+    .set({ [field]: trimmed || null })
     .where(eq(oosItems.id, itemId));
   revalidateOos();
 }
