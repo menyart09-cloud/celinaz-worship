@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import jsPDF from "jspdf";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { OosItemWithSongs, SongLibraryRow } from "@/lib/queries";
@@ -17,6 +17,9 @@ import {
   copyFromLastWeekAction,
   pullSongsFromLogAction,
 } from "./actions";
+import { registerFlusher } from "./pending-saves";
+
+type Field = "label" | "assignee" | "detail";
 
 function noopSubscribe() {
   return () => {};
@@ -329,23 +332,88 @@ function OosRow({
   const [label, setLabel] = useState(item.label);
   const [assignee, setAssignee] = useState(item.assignee ?? "");
   const [detail, setDetail] = useState(item.detail ?? "");
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+  const [inFlight, setInFlight] = useState(0);
   const [justSaved, setJustSaved] = useState(false);
+  const pending = inFlight > 0;
 
-  function commitField(field: "label" | "assignee" | "detail", value: string) {
-    startTransition(async () => {
-      await updateItemFieldAction(item.id, field, value);
-      setJustSaved(true);
-      setTimeout(() => setJustSaved(false), 1500);
-    });
-  }
+  // Edits autosave shortly after you stop typing (and instantly on blur), so
+  // nothing depends on leaving the field first. Refs hold the latest text and
+  // what the server last got, so flushing never reads stale state.
+  const itemId = item.id;
+  const initial = { label: item.label, assignee: item.assignee ?? "", detail: item.detail ?? "" };
+  const latest = useRef({ ...initial });
+  const saved = useRef({ ...initial });
+  const timers = useRef<Partial<Record<Field, ReturnType<typeof setTimeout>>>>({});
+  const chain = useRef<Promise<void>>(Promise.resolve());
+  const assigneeNamesRef = useRef(assigneeNames);
+  useEffect(() => {
+    assigneeNamesRef.current = assigneeNames;
+  }, [assigneeNames]);
 
-  function commitAssignee(value: string) {
-    commitField("assignee", value);
-    const trimmed = value.trim();
-    if (trimmed && !assigneeNames.includes(trimmed)) {
-      startTransition(() => addAssigneeNameAction(trimmed));
+  const save = useCallback(
+    (field: Field): Promise<void> => {
+      clearTimeout(timers.current[field]);
+      delete timers.current[field];
+      const value = latest.current[field];
+      if (value === saved.current[field]) return chain.current;
+      saved.current[field] = value;
+      // Saves run one after another so an older value can't land last.
+      const run = chain.current
+        .then(async () => {
+          await updateItemFieldAction(itemId, field, value);
+        })
+        .catch(() => {
+          // Let the next edit (or blur) retry instead of believing it saved.
+          saved.current[field] = "\u0000unsaved";
+        })
+        .finally(() => {
+          setInFlight((n) => n - 1);
+          setJustSaved(true);
+          setTimeout(() => setJustSaved(false), 1500);
+        });
+      setInFlight((n) => n + 1);
+      chain.current = run;
+      return run;
+    },
+    [itemId],
+  );
+
+  // Only when they're done with the field: learning the name on every
+  // debounced save would add "T", "To", "Tom" to the quick picks as they type.
+  const commitAssignee = useCallback(async () => {
+    await save("assignee");
+    const name = latest.current.assignee.trim();
+    if (name && !assigneeNamesRef.current.includes(name)) {
+      assigneeNamesRef.current = [...assigneeNamesRef.current, name];
+      await addAssigneeNameAction(name).catch(() => {});
     }
+  }, [save]);
+
+  const flush = useCallback(async () => {
+    await Promise.all([save("label"), save("detail"), commitAssignee()]);
+  }, [save, commitAssignee]);
+
+  useEffect(() => {
+    const unregister = registerFlusher(flush);
+    const onHide = () => void flush();
+    window.addEventListener("pagehide", onHide);
+    document.addEventListener("visibilitychange", onHide);
+    return () => {
+      unregister();
+      window.removeEventListener("pagehide", onHide);
+      document.removeEventListener("visibilitychange", onHide);
+      void flush();
+    };
+  }, [flush]);
+
+  function edit(field: Field, value: string) {
+    latest.current[field] = value;
+    if (field === "label") setLabel(value);
+    else if (field === "assignee") setAssignee(value);
+    else setDetail(value);
+    clearTimeout(timers.current[field]);
+    timers.current[field] = setTimeout(() => void save(field), 600);
   }
 
   return (
@@ -396,8 +464,8 @@ function OosRow({
         <div className="flex flex-wrap items-center gap-2">
           <input
             value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            onBlur={() => commitField("label", label)}
+            onChange={(e) => edit("label", e.target.value)}
+            onBlur={() => void save("label")}
             className="min-w-[150px] flex-1 rounded-md border border-transparent px-1 py-0.5 font-bold hover:border-border-strong hover:bg-surface focus:border-border-strong focus:bg-surface focus:outline-none"
           />
           {(pending || justSaved) && (
@@ -408,8 +476,8 @@ function OosRow({
           <div className="flex flex-col items-start gap-1">
             <input
               value={assignee}
-              onChange={(e) => setAssignee(e.target.value)}
-              onBlur={() => commitAssignee(assignee)}
+              onChange={(e) => edit("assignee", e.target.value)}
+              onBlur={() => void commitAssignee()}
               placeholder="Assigned to…"
               className="w-40 rounded-full border border-border-strong bg-surface-sunk px-3 py-1 text-sm text-text-muted"
             />
@@ -419,8 +487,8 @@ function OosRow({
                   <button
                     type="button"
                     onClick={() => {
-                      setAssignee(name);
-                      startTransition(() => updateItemFieldAction(item.id, "assignee", name));
+                      edit("assignee", name);
+                      void save("assignee");
                     }}
                     className="rounded-full border border-dashed border-border-strong px-1.5 py-0.5 text-[0.65rem] text-text-faint hover:border-accent hover:text-accent-strong"
                   >
@@ -442,8 +510,8 @@ function OosRow({
 
         <input
           value={detail}
-          onChange={(e) => setDetail(e.target.value)}
-          onBlur={() => commitField("detail", detail)}
+          onChange={(e) => edit("detail", e.target.value)}
+          onBlur={() => void save("detail")}
           placeholder="Scripture reference, a note for the team…"
           className="font-mono-tab w-full rounded-md border border-border-strong bg-surface px-2.5 py-1.5 text-sm"
         />
