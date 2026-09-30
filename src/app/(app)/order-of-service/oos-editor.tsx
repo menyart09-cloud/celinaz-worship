@@ -286,18 +286,32 @@ export function OosEditor({
           )}
 
           <div className="overflow-hidden rounded-xl border border-border bg-surface">
-            {items.map((item, i) => (
+            {items.flatMap((item, i) => [
               <OosRow
                 key={item.id}
                 item={item}
                 isEven={i % 2 === 1}
                 assigneeNames={assigneeNames}
                 library={library}
-                onAddBelow={() => addItem(item.id)}
                 canMoveUp={i > 0}
                 canMoveDown={i < items.length - 1}
-              />
-            ))}
+              />,
+              // Sits right on the border between this item and the next (or,
+              // for the last item, the bottom of the list) — floated on top
+              // of both neighbors instead of living inside either one, so it
+              // reads as "insert a new item here" rather than an action on
+              // whichever row it happens to be drawn inside of.
+              <div key={`${item.id}-insert`} className="no-print relative h-0">
+                <button
+                  type="button"
+                  onClick={() => addItem(item.id)}
+                  title="Insert a new item below this one"
+                  className="absolute -top-3 left-4 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-border-strong bg-surface text-text-faint shadow-sm hover:border-accent hover:text-accent-strong"
+                >
+                  +
+                </button>
+              </div>,
+            ])}
           </div>
         </div>
       )}
@@ -318,7 +332,6 @@ function OosRow({
   isEven,
   assigneeNames,
   library,
-  onAddBelow,
   canMoveUp,
   canMoveDown,
 }: {
@@ -326,7 +339,6 @@ function OosRow({
   isEven: boolean;
   assigneeNames: string[];
   library: SongLibraryRow[];
-  onAddBelow: () => void;
   canMoveUp: boolean;
   canMoveDown: boolean;
 }) {
@@ -467,14 +479,6 @@ function OosRow({
           className="flex h-9 w-9 items-center justify-center rounded-md border border-border-strong text-text-faint hover:border-accent hover:text-accent-strong disabled:opacity-30 disabled:hover:border-border-strong disabled:hover:text-text-faint"
         >
           ↓
-        </button>
-        <button
-          type="button"
-          onClick={onAddBelow}
-          title="Insert a new item below this one"
-          className="flex h-9 w-9 items-center justify-center rounded-md border border-border-strong text-text-faint hover:border-accent hover:text-accent-strong"
-        >
-          +
         </button>
         <button
           type="button"
