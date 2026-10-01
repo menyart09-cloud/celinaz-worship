@@ -360,13 +360,30 @@ function OosRow({
     assigneeNamesRef.current = assigneeNames;
   }, [assigneeNames]);
 
+  // Tracks, per field, whether we're still waiting to see our own last
+  // write echoed back through props. Set when a save is dispatched, cleared
+  // only once an incoming prop value actually matches what we sent — not
+  // merely once the save's own request/response cycle finishes (see below).
+  const awaitingEcho = useRef<Record<Field, boolean>>({ label: false, assignee: false, detail: false });
+
   const save = useCallback(
     (field: Field): Promise<void> => {
       clearTimeout(timers.current[field]);
       delete timers.current[field];
-      const value = latest.current[field];
+      // updateItemFieldAction trims before persisting, so a debounced save
+      // that catches an ordinary trailing space mid-sentence (typing
+      // "Pastor " just before the next word) would otherwise send and
+      // record an untrimmed value here while the server stores the trimmed
+      // one — the next revalidation's echo then wouldn't match what we
+      // think we saved, reads as an external edit, and overwrites the field
+      // with the server's trimmed snapshot, dropping anything typed since.
+      // Trimming here keeps our own bookkeeping identical to what the
+      // server actually persists; the visible input text is untouched since
+      // display is driven by `edit()`, not by this value.
+      const value = latest.current[field].trim();
       if (value === saved.current[field]) return chain.current;
       saved.current[field] = value;
+      awaitingEcho.current[field] = true;
       // Saves run one after another so an older value can't land last.
       const run = chain.current
         .then(async () => {
@@ -424,6 +441,15 @@ function OosRow({
   // was there before, even though the database already has the new value.
   // Comparing against `saved` (what WE last wrote) tells an external change
   // apart from the echo of our own save landing back through props.
+  //
+  // One wrinkle: a save's own request/response finishing does not mean its
+  // revalidated props have reached this component yet — those can arrive
+  // slightly later, as a separate update. In that gap, a stale prop update
+  // (still reflecting the pre-edit value, e.g. from the page's own refresh
+  // cycle) can slip through, read as "external" since it doesn't match
+  // `saved`, and clobber whatever's since been typed. `awaitingEcho` closes
+  // that gap: once a save is dispatched, nothing is treated as external for
+  // that field until a prop value actually matches what we sent.
   useEffect(() => {
     const incoming: Record<Field, string> = {
       label: item.label,
@@ -432,7 +458,11 @@ function OosRow({
     };
     (Object.keys(incoming) as Field[]).forEach((field) => {
       const value = incoming[field];
-      if (value === saved.current[field] || value === latest.current[field]) return;
+      if (value === saved.current[field]) {
+        awaitingEcho.current[field] = false;
+        return;
+      }
+      if (awaitingEcho.current[field] || value === latest.current[field]) return;
       latest.current[field] = value;
       saved.current[field] = value;
       if (field === "label") setLabel(value);
