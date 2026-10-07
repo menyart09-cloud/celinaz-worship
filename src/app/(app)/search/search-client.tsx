@@ -110,9 +110,12 @@ function ResultView({ result }: { result: SearchResult }) {
         </p>
         <ul className="flex flex-col">
           {result.history.map((h, i) => (
-            <li key={i} className="flex justify-between border-t border-border py-2 text-sm first:border-t-0">
+            <li
+              key={i}
+              className="flex flex-wrap items-center justify-between gap-2 border-t border-border py-2 text-sm first:border-t-0"
+            >
               <span className="font-mono-tab font-semibold text-accent-strong">{isoToMdy(h.date)}</span>
-              <span>Hymn {h.hymnNumber}</span>
+              <SongChip hymnNumber={h.hymnNumber} title={result.title} />
             </li>
           ))}
         </ul>
@@ -134,8 +137,12 @@ function ResultView({ result }: { result: SearchResult }) {
         </p>
         <ul className="flex flex-col">
           {result.history.map((h, i) => (
-            <li key={i} className="flex justify-between border-t border-border py-2 text-sm first:border-t-0">
+            <li
+              key={i}
+              className="flex flex-wrap items-center justify-between gap-2 border-t border-border py-2 text-sm first:border-t-0"
+            >
               <span className="font-mono-tab font-semibold text-accent-strong">{isoToMdy(h.date)}</span>
+              <SongChip hymnNumber={h.hymnNumber} title={result.title} />
             </li>
           ))}
         </ul>
