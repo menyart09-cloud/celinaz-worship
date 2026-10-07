@@ -122,6 +122,23 @@ export const oosItemSongs = pgTable("oos_item_songs", {
   position: integer("position").notNull().default(0),
 });
 
+// A song removed from an Order of Service item by hand — "Pull from Service
+// Log" must never bring it back for that item just because it's still
+// logged on the service, even after a later pull adds some other new song.
+export const oosItemExcludedSongs = pgTable(
+  "oos_item_excluded_songs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    oosItemId: uuid("oos_item_id")
+      .notNull()
+      .references(() => oosItems.id, { onDelete: "cascade" }),
+    songId: uuid("song_id")
+      .notNull()
+      .references(() => songs.id, { onDelete: "cascade" }),
+  },
+  (t) => [unique("oos_item_excluded_songs_unique").on(t.oosItemId, t.songId)],
+);
+
 // Names offered as quick-pick pills on the Order of Service assignee field.
 export const assigneeNames = pgTable("assignee_names", {
   id: uuid("id").primaryKey().defaultRandom(),

@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { oosItems, oosItemSongs, assigneeNames } from "@/db/schema";
+import { oosItems, oosItemSongs, oosItemExcludedSongs, assigneeNames } from "@/db/schema";
 import { upsertSong } from "@/lib/mutations";
 import { getOosItems, findLastOosDateBefore, getServiceByDate } from "@/lib/queries";
 
@@ -100,7 +100,18 @@ export async function addSongToItemAction(itemId: string, hymnNumber: string, ti
 }
 
 export async function removeSongFromItemAction(linkId: string) {
+  const link = await db.query.oosItemSongs.findFirst({ where: eq(oosItemSongs.id, linkId) });
   await db.delete(oosItemSongs).where(eq(oosItemSongs.id, linkId));
+  // Remembered so "Pull from Service Log" never brings this song back for
+  // this item just because it's still logged on the service — removing a
+  // song here is meant to stick, even across a later pull that's only
+  // after some other, newly-logged song.
+  if (link) {
+    await db
+      .insert(oosItemExcludedSongs)
+      .values({ oosItemId: link.oosItemId, songId: link.songId })
+      .onConflictDoNothing();
+  }
   revalidateOos();
 }
 
@@ -148,21 +159,36 @@ export async function pullSongsFromLogAction(date: string) {
   const message = items.find((i) => normalizeLabel(i.label) === "message");
 
   if (service.songs.length) {
-    if (opening) {
-      await db.delete(oosItemSongs).where(eq(oosItemSongs.oosItemId, opening.id));
-      const [first] = service.songs;
-      const songId = await upsertSong(first.hymnNumber, first.title);
-      await db.insert(oosItemSongs).values({ oosItemId: opening.id, songId, position: 0 });
-    }
-    if (worship) {
-      await db.delete(oosItemSongs).where(eq(oosItemSongs.oosItemId, worship.id));
-      // Only the "Opening Song" item claims the first song — if that item
-      // doesn't exist this week, Worship gets everything instead of
-      // silently losing the first song to nowhere.
-      const rest = opening ? service.songs.slice(1) : service.songs;
-      for (let i = 0; i < rest.length; i++) {
-        const songId = await upsertSong(rest[i].hymnNumber, rest[i].title);
-        await db.insert(oosItemSongs).values({ oosItemId: worship.id, songId, position: i });
+    // Only the "Opening Song" item claims the first song — if that item
+    // doesn't exist this week, Worship gets everything instead of silently
+    // losing the first song to nowhere.
+    const targets = [
+      opening && { item: opening, wanted: service.songs.slice(0, 1) },
+      worship && { item: worship, wanted: opening ? service.songs.slice(1) : service.songs },
+    ].filter((t): t is { item: (typeof items)[number]; wanted: typeof service.songs } => Boolean(t));
+
+    if (targets.length) {
+      const excludedRows = await db.query.oosItemExcludedSongs.findMany({
+        where: inArray(
+          oosItemExcludedSongs.oosItemId,
+          targets.map((t) => t.item.id),
+        ),
+      });
+      const excluded = new Set(excludedRows.map((r) => `${r.oosItemId}:${r.songId}`));
+
+      // Adds whatever's missing rather than replacing the item's songs
+      // outright — a song removed by hand must stay gone even after a
+      // later pull, not get silently re-added alongside some newly-logged
+      // song just because it's still sitting in the service's own log.
+      for (const { item, wanted } of targets) {
+        const existing = new Set(item.songs.map((s) => s.songId));
+        let position = item.songs.length;
+        for (const song of wanted) {
+          const songId = await upsertSong(song.hymnNumber, song.title);
+          if (existing.has(songId) || excluded.has(`${item.id}:${songId}`)) continue;
+          await db.insert(oosItemSongs).values({ oosItemId: item.id, songId, position: position++ });
+          existing.add(songId);
+        }
       }
     }
   }

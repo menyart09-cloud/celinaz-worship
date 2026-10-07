@@ -146,7 +146,7 @@ export type OosItemWithSongs = {
   assignee: string | null;
   detail: string | null;
   position: number;
-  songs: { linkId: string; hymnNumber: string; title: string }[];
+  songs: { linkId: string; songId: string; hymnNumber: string; title: string }[];
 };
 
 export async function getOosItems(date: string): Promise<OosItemWithSongs[]> {
@@ -177,7 +177,7 @@ export async function getOosItems(date: string): Promise<OosItemWithSongs[]> {
       byId.set(r.id, item);
     }
     if (r.linkId && r.songId && r.title) {
-      item.songs.push({ linkId: r.linkId, hymnNumber: r.hymnNumber ?? "Comp", title: r.title });
+      item.songs.push({ linkId: r.linkId, songId: r.songId, hymnNumber: r.hymnNumber ?? "Comp", title: r.title });
     }
   }
   return [...byId.values()].sort((a, b) => a.position - b.position);
