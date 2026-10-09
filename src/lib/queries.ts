@@ -11,6 +11,7 @@ import {
   oosItemSongs,
 } from "@/db/schema";
 import { todayIso } from "./dates";
+import { normalizeLabel } from "./labels";
 
 export type ServiceWithSongs = {
   id: string;
@@ -142,28 +143,59 @@ export async function getServiceByDate(iso: string) {
   return all.find((s) => s.date === iso) ?? null;
 }
 
-// Every distinct Order of Service item header ever typed, for the Service
-// Log's "where does this song go" picker — newest use first, so headers
-// from the run sheet you actually use lately sort above old one-offs.
-// Grows on its own: type a new item label on any Order of Service and it
-// shows up here next time, no separate list to maintain.
-export async function getKnownOosHeaders(): Promise<string[]> {
-  const rows = await db
-    .select({ label: oosItems.label, date: oosItems.date })
-    .from(oosItems)
-    .orderBy(asc(oosItems.date));
+function median(nums: number[]): number {
+  const sorted = [...nums].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
 
-  const byKey = new Map<string, { display: string; date: string }>();
+// Every distinct Order of Service item header ever typed, for the Service
+// Log's "where does this song go" picker — ordered to read like a run
+// sheet, earliest-typical-item first, so the list itself says roughly
+// where in the service each header falls instead of being an arbitrary
+// jumble. "Typical" is each header's median position on the dates it's
+// been used, as a fraction of that date's item count (so a date with more
+// or fewer items than usual doesn't skew it). Grows on its own: type a new
+// item label on any Order of Service and it shows up here next time, no
+// separate list to maintain.
+export async function getKnownOosHeaders(): Promise<string[]> {
+  const rows = await db.select({ label: oosItems.label, date: oosItems.date, position: oosItems.position }).from(oosItems);
+
+  const countByDate = new Map<string, number>();
+  for (const r of rows) countByDate.set(r.date, (countByDate.get(r.date) ?? 0) + 1);
+
+  const byKey = new Map<string, { display: string; lastUsed: string; relPositions: number[] }>();
   for (const r of rows) {
     const display = r.label.split(":")[0].trim();
     if (!display) continue;
-    const key = display.toLowerCase();
-    const existing = byKey.get(key);
-    if (!existing || r.date >= existing.date) byKey.set(key, { display, date: r.date });
+    const key = normalizeLabel(display);
+    const total = countByDate.get(r.date) ?? 1;
+    const relPosition = total > 1 ? r.position / (total - 1) : 0;
+
+    let entry = byKey.get(key);
+    if (!entry) {
+      entry = { display, lastUsed: r.date, relPositions: [] };
+      byKey.set(key, entry);
+    }
+    entry.relPositions.push(relPosition);
+    // Keep the most recently typed exact casing for display.
+    if (r.date >= entry.lastUsed) {
+      entry.display = display;
+      entry.lastUsed = r.date;
+    }
   }
 
-  const headers = [...byKey.values()].sort((a, b) => (a.date < b.date ? 1 : -1)).map((v) => v.display);
-  return headers.includes("Worship") ? headers : ["Worship", ...headers];
+  // A header used only once or twice can coincidentally land at the exact
+  // same median as a well-established one (e.g. anything that happened to
+  // open or close the service that one time ties "Pre-Service" at 0) — more
+  // occurrences is a more reliable read on where something typically goes,
+  // so it wins ties instead of crowding out the real pattern.
+  const headers = [...byKey.values()]
+    .map((e) => ({ display: e.display, typicalPosition: median(e.relPositions), uses: e.relPositions.length }))
+    .sort((a, b) => a.typicalPosition - b.typicalPosition || b.uses - a.uses)
+    .map((e) => e.display);
+
+  return headers.includes("Worship") ? headers : [...headers, "Worship"];
 }
 
 export async function searchByTitle(query: string) {
@@ -278,13 +310,6 @@ export async function getAllOosDates(): Promise<OosLogEntry[]> {
     .groupBy(oosItems.date)
     .orderBy(desc(oosItems.date));
   return rows;
-}
-
-// Mirrors the trailing-colon-tolerant match used when pulling from the
-// Service Log — the owner's own "Scripture:" label shouldn't need to be
-// typed exactly to show up here.
-function normalizeLabel(label: string): string {
-  return label.replace(/:+\s*$/, "").trim().toLowerCase();
 }
 
 export type ScriptureHistoryRow = { date: string; scripture: string };
