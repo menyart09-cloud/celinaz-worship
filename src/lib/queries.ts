@@ -161,28 +161,38 @@ function median(nums: number[]): number {
 export async function getKnownOosHeaders(): Promise<string[]> {
   const rows = await db.select({ label: oosItems.label, date: oosItems.date, position: oosItems.position }).from(oosItems);
 
-  const countByDate = new Map<string, number>();
-  for (const r of rows) countByDate.set(r.date, (countByDate.get(r.date) ?? 0) + 1);
+  const byDate = new Map<string, typeof rows>();
+  for (const r of rows) {
+    const list = byDate.get(r.date);
+    if (list) list.push(r);
+    else byDate.set(r.date, [r]);
+  }
 
   const byKey = new Map<string, { display: string; lastUsed: string; relPositions: number[] }>();
-  for (const r of rows) {
-    const display = r.label.split(":")[0].trim();
-    if (!display) continue;
-    const key = normalizeLabel(display);
-    const total = countByDate.get(r.date) ?? 1;
-    const relPosition = total > 1 ? r.position / (total - 1) : 0;
+  for (const dateRows of byDate.values()) {
+    // Ranked by position within the date rather than using `position`
+    // itself — removing an item doesn't renumber what's left, so raw
+    // position values can have gaps that'd throw the fraction off.
+    const ranked = [...dateRows].sort((a, b) => a.position - b.position);
+    const total = ranked.length;
+    ranked.forEach((r, rank) => {
+      const display = r.label.split(":")[0].trim();
+      if (!display) return;
+      const key = normalizeLabel(display);
+      const relPosition = total > 1 ? rank / (total - 1) : 0;
 
-    let entry = byKey.get(key);
-    if (!entry) {
-      entry = { display, lastUsed: r.date, relPositions: [] };
-      byKey.set(key, entry);
-    }
-    entry.relPositions.push(relPosition);
-    // Keep the most recently typed exact casing for display.
-    if (r.date >= entry.lastUsed) {
-      entry.display = display;
-      entry.lastUsed = r.date;
-    }
+      let entry = byKey.get(key);
+      if (!entry) {
+        entry = { display, lastUsed: r.date, relPositions: [] };
+        byKey.set(key, entry);
+      }
+      entry.relPositions.push(relPosition);
+      // Keep the most recently typed exact casing for display.
+      if (r.date >= entry.lastUsed) {
+        entry.display = display;
+        entry.lastUsed = r.date;
+      }
+    });
   }
 
   // A header used only once or twice can coincidentally land at the exact

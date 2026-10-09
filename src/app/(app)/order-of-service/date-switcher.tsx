@@ -16,6 +16,11 @@ export function DateSwitcher({ date }: { date: string }) {
   // Wait for every row's pending edit to reach the server first — navigating
   // mid-save is what used to throw away whatever was just typed.
   async function goTo(next: string) {
+    // Cancel any debounced navigation still waiting on typing in the date
+    // input — otherwise clicking ‹ or › while mid-retype of the year still
+    // lets that stale timer fire 400ms later and navigate a second time,
+    // to whatever incomplete date was last typed.
+    clearTimeout(typingTimer.current);
     await flushAllSaves();
     router.push(`/order-of-service?date=${next}`);
   }

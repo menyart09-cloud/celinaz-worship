@@ -49,7 +49,18 @@ export async function addItemAction(date: string, afterItemId: string | null) {
 }
 
 export async function removeItemAction(itemId: string) {
+  const item = await db.query.oosItems.findFirst({ where: eq(oosItems.id, itemId) });
+  if (!item) return;
+
   await db.delete(oosItems).where(eq(oosItems.id, itemId));
+  // Close the gap so positions stay contiguous — addItemAction's own
+  // insert math, and the known-headers ordering, both assume a date's
+  // items run 0..count-1 with no holes.
+  await db
+    .update(oosItems)
+    .set({ position: sql`${oosItems.position} - 1` })
+    .where(and(eq(oosItems.date, item.date), gte(oosItems.position, item.position + 1)));
+
   revalidateOos();
 }
 
@@ -94,17 +105,23 @@ export async function addSongToItemAction(itemId: string, hymnNumber: string, ti
 
 export async function removeSongFromItemAction(linkId: string) {
   const link = await db.query.oosItemSongs.findFirst({ where: eq(oosItemSongs.id, linkId) });
+  if (!link) return;
+
   await db.delete(oosItemSongs).where(eq(oosItemSongs.id, linkId));
+  // Close the gap so the item's remaining songs stay contiguous — the next
+  // song added or moved in picks its position from this item's song count.
+  await db
+    .update(oosItemSongs)
+    .set({ position: sql`${oosItemSongs.position} - 1` })
+    .where(and(eq(oosItemSongs.oosItemId, link.oosItemId), gte(oosItemSongs.position, link.position + 1)));
   // Remembered so "Pull from Service Log" never brings this song back for
   // this item just because it's still logged on the service — removing a
   // song here is meant to stick, even across a later pull that's only
   // after some other, newly-logged song.
-  if (link) {
-    await db
-      .insert(oosItemExcludedSongs)
-      .values({ oosItemId: link.oosItemId, songId: link.songId })
-      .onConflictDoNothing();
-  }
+  await db
+    .insert(oosItemExcludedSongs)
+    .values({ oosItemId: link.oosItemId, songId: link.songId })
+    .onConflictDoNothing();
   revalidateOos();
 }
 
@@ -128,6 +145,13 @@ export async function moveSongToItemAction(linkId: string, targetItemId: string)
       .set({ oosItemId: targetItemId, position: existing.length })
       .where(eq(oosItemSongs.id, linkId));
   }
+
+  // Close the gap the song left behind on the source item, same as removing
+  // it outright would — its other songs stay contiguous either way.
+  await db
+    .update(oosItemSongs)
+    .set({ position: sql`${oosItemSongs.position} - 1` })
+    .where(and(eq(oosItemSongs.oosItemId, link.oosItemId), gte(oosItemSongs.position, link.position + 1)));
 
   // Same bookkeeping as removing it outright — the song is just as
   // deliberately not-here-anymore from the source item's point of view.
@@ -207,18 +231,24 @@ export async function pullSongsFromLogAction(date: string) {
       });
       const excluded = new Set(excludedRows.map((r) => `${r.oosItemId}:${r.songId}`));
 
+      // Checked against the whole run sheet, not just each song's target
+      // item — retagging a song's destination after an earlier pull (or
+      // manually moving it with "Move to…") must not duplicate it onto a
+      // second item; relocating it is what Move to… is for.
+      const placedAnywhere = new Set<string>();
+      for (const item of items) for (const s of item.songs) placedAnywhere.add(s.songId);
+
       // Adds whatever's missing rather than replacing the item's songs
       // outright — a song removed by hand must stay gone even after a
       // later pull, not get silently re-added alongside some newly-logged
       // song just because it's still sitting in the service's own log.
       for (const { item, songs } of grouped.values()) {
-        const existing = new Set(item.songs.map((s) => s.songId));
         let position = item.songs.length;
         for (const song of songs) {
           const songId = await upsertSong(song.hymnNumber, song.title);
-          if (existing.has(songId) || excluded.has(`${item.id}:${songId}`)) continue;
+          if (placedAnywhere.has(songId) || excluded.has(`${item.id}:${songId}`)) continue;
           await db.insert(oosItemSongs).values({ oosItemId: item.id, songId, position: position++ });
-          existing.add(songId);
+          placedAnywhere.add(songId);
         }
       }
     }

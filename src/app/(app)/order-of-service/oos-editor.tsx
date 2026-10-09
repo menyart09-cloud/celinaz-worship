@@ -349,6 +349,7 @@ function OosRow({
   const [, startTransition] = useTransition();
   const [inFlight, setInFlight] = useState(0);
   const [justSaved, setJustSaved] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
   const pending = inFlight > 0;
 
   // Edits autosave shortly after you stop typing (and instantly on blur), so
@@ -393,10 +394,21 @@ function OosRow({
       const run = chain.current
         .then(async () => {
           await updateItemFieldAction(itemId, field, value);
+          setSaveFailed(false);
         })
         .catch(() => {
+          // Only back off if nothing newer has been queued for this field
+          // since this attempt — if the user kept typing and a later save
+          // already took over, it owns `saved`/`awaitingEcho` now and this
+          // older failure must not stomp on that bookkeeping.
+          if (saved.current[field] !== value) return;
           // Let the next edit (or blur) retry instead of believing it saved.
           saved.current[field] = "\u0000unsaved";
+          // Don't leave external changes (e.g. a Pull) permanently blocked
+          // for this field just because this one save attempt failed —
+          // there's no echo coming for a save that never landed.
+          awaitingEcho.current[field] = false;
+          setSaveFailed(true);
         })
         .finally(() => {
           setInFlight((n) => n - 1);
@@ -529,9 +541,13 @@ function OosRow({
             onBlur={() => void save("label")}
             className="min-w-[150px] flex-1 rounded-md border border-transparent px-1 py-0.5 font-bold hover:border-border-strong hover:bg-surface focus:border-border-strong focus:bg-surface focus:outline-none"
           />
-          {(pending || justSaved) && (
-            <span className="no-print text-xs font-semibold text-text-faint">
-              {pending ? "Saving…" : "✓ Saved"}
+          {(pending || justSaved || saveFailed) && (
+            <span
+              className={
+                "no-print text-xs font-semibold " + (saveFailed && !pending ? "text-warn" : "text-text-faint")
+              }
+            >
+              {pending ? "Saving…" : saveFailed ? "⚠ Not saved — edit again to retry" : "✓ Saved"}
             </span>
           )}
           <div className="flex flex-col items-start gap-1">
