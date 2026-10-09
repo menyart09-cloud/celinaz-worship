@@ -4,7 +4,13 @@ import { useMemo, useState } from "react";
 import { ServiceRow } from "./service-row";
 import type { ServiceWithSongs } from "@/lib/queries";
 
-export function ServiceLogList({ servicesList }: { servicesList: ServiceWithSongs[] }) {
+export function ServiceLogList({
+  servicesList,
+  knownHeaders,
+}: {
+  servicesList: ServiceWithSongs[];
+  knownHeaders: string[];
+}) {
   const [sortDir, setSortDir] = useState<1 | -1>(-1);
 
   const sorted = useMemo(
@@ -45,7 +51,7 @@ export function ServiceLogList({ servicesList }: { servicesList: ServiceWithSong
       </div>
       <div className="overflow-hidden rounded-lg border border-border md:rounded-t-none md:border-t-0">
         {sorted.map((service) => (
-          <ServiceRow key={service.id} service={service} />
+          <ServiceRow key={service.id} service={service} knownHeaders={knownHeaders} />
         ))}
       </div>
     </div>

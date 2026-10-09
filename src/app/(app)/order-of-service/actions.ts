@@ -5,7 +5,8 @@ import { and, eq, gte, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { oosItems, oosItemSongs, oosItemExcludedSongs, assigneeNames } from "@/db/schema";
 import { upsertSong } from "@/lib/mutations";
-import { getOosItems, findLastOosDateBefore, getServiceByDate } from "@/lib/queries";
+import { getOosItems, findLastOosDateBefore, getServiceByDate, type OosItemWithSongs } from "@/lib/queries";
+import { normalizeLabel } from "@/lib/labels";
 
 const STARTER_TEMPLATE = [
   "Announcements Slides",
@@ -24,14 +25,6 @@ const STARTER_TEMPLATE = [
 
 function revalidateOos() {
   revalidatePath("/order-of-service");
-}
-
-// Matches item labels loosely — stray spacing/casing, or a colon (with
-// anything after it, since some run sheets have the assignee typed straight
-// into the label, e.g. "Message: Pastor Dave") shouldn't make a label fail
-// to match "Worship" or "Message" and silently skip the pull.
-function normalizeLabel(label: string): string {
-  return label.split(":")[0].trim().toLowerCase();
 }
 
 // Inserts a new blank item right after `afterItemId` (or at the very top when
@@ -154,25 +147,32 @@ export async function pullSongsFromLogAction(date: string) {
   if (!service) return;
 
   const items = await getOosItems(date);
-  const opening = items.find((i) => normalizeLabel(i.label) === "opening song");
-  const worship = items.find((i) => normalizeLabel(i.label) === "worship");
   const message = items.find((i) => normalizeLabel(i.label) === "message");
 
   if (service.songs.length) {
-    // Only the "Opening Song" item claims the first song — if that item
-    // doesn't exist this week, Worship gets everything instead of silently
-    // losing the first song to nowhere.
-    const targets = [
-      opening && { item: opening, wanted: service.songs.slice(0, 1) },
-      worship && { item: worship, wanted: opening ? service.songs.slice(1) : service.songs },
-    ].filter((t): t is { item: (typeof items)[number]; wanted: typeof service.songs } => Boolean(t));
+    // A song's own destination tag (set on Service Log) says which item it
+    // belongs under — "Opening Song", "Worship", or anything else that's
+    // ever been used as an item label. No tag means Worship. A tag whose
+    // item doesn't exist on this particular run sheet is skipped, same as
+    // it's always been skipped when there was no Opening Song item at all.
+    const byNormalizedLabel = new Map<string, OosItemWithSongs>();
+    for (const item of items) {
+      const key = normalizeLabel(item.label);
+      if (!byNormalizedLabel.has(key)) byNormalizedLabel.set(key, item);
+    }
 
-    if (targets.length) {
+    const grouped = new Map<string, { item: OosItemWithSongs; songs: typeof service.songs }>();
+    for (const song of service.songs) {
+      const target = byNormalizedLabel.get(normalizeLabel(song.destination?.trim() || "Worship"));
+      if (!target) continue;
+      const bucket = grouped.get(target.id) ?? { item: target, songs: [] };
+      bucket.songs.push(song);
+      grouped.set(target.id, bucket);
+    }
+
+    if (grouped.size) {
       const excludedRows = await db.query.oosItemExcludedSongs.findMany({
-        where: inArray(
-          oosItemExcludedSongs.oosItemId,
-          targets.map((t) => t.item.id),
-        ),
+        where: inArray(oosItemExcludedSongs.oosItemId, [...grouped.keys()]),
       });
       const excluded = new Set(excludedRows.map((r) => `${r.oosItemId}:${r.songId}`));
 
@@ -180,10 +180,10 @@ export async function pullSongsFromLogAction(date: string) {
       // outright — a song removed by hand must stay gone even after a
       // later pull, not get silently re-added alongside some newly-logged
       // song just because it's still sitting in the service's own log.
-      for (const { item, wanted } of targets) {
+      for (const { item, songs } of grouped.values()) {
         const existing = new Set(item.songs.map((s) => s.songId));
         let position = item.songs.length;
-        for (const song of wanted) {
+        for (const song of songs) {
           const songId = await upsertSong(song.hymnNumber, song.title);
           if (existing.has(songId) || excluded.has(`${item.id}:${songId}`)) continue;
           await db.insert(oosItemSongs).values({ oosItemId: item.id, songId, position: position++ });

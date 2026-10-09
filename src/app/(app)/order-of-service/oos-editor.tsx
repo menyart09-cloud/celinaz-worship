@@ -260,8 +260,9 @@ export function OosEditor({
           </div>
           <p className="no-print mb-4 text-xs text-text-faint">
             &quot;Start from last week&quot; keeps the run sheet, clears just the songs. &quot;Pull
-            from Service Log&quot; fills Opening Song &amp; Worship, plus the pastor&apos;s message
-            and scripture under Message, from what&apos;s already logged for this date.
+            from Service Log&quot; adds each logged song under the item you picked for it on the
+            Service Log (Worship, if you didn&apos;t pick one), plus the pastor&apos;s message and
+            scripture under Message, from what&apos;s already logged for this date.
           </p>
 
           <div className="no-print mb-3">

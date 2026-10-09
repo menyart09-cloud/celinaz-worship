@@ -3,17 +3,22 @@
 import { useState, useTransition } from "react";
 import { isoToMdy, todayIso } from "@/lib/dates";
 import { SongChip } from "../_components/song-chip";
-import { updateServiceAction, type EditedSong } from "./actions";
+import { updateServiceAction, setSongDestinationAction, type EditedSong } from "./actions";
 import type { ServiceWithSongs } from "@/lib/queries";
 
-export function ServiceRow({ service }: { service: ServiceWithSongs }) {
+export function ServiceRow({ service, knownHeaders }: { service: ServiceWithSongs; knownHeaders: string[] }) {
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
   const [sermon, setSermon] = useState(service.sermon ?? "");
   const [scripture, setScripture] = useState(service.scripture ?? "");
   const [note, setNote] = useState(service.note ?? "");
   const [songs, setSongs] = useState<EditedSong[]>(
-    service.songs.map((s) => ({ hymnNumber: s.hymnNumber, title: s.title, verses: s.verses ?? "" })),
+    service.songs.map((s) => ({
+      hymnNumber: s.hymnNumber,
+      title: s.title,
+      verses: s.verses ?? "",
+      destination: s.destination ?? "",
+    })),
   );
 
   const isFuture = service.date > todayIso();
@@ -23,7 +28,14 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
     setSermon(service.sermon ?? "");
     setScripture(service.scripture ?? "");
     setNote(service.note ?? "");
-    setSongs(service.songs.map((s) => ({ hymnNumber: s.hymnNumber, title: s.title, verses: s.verses ?? "" })));
+    setSongs(
+      service.songs.map((s) => ({
+        hymnNumber: s.hymnNumber,
+        title: s.title,
+        verses: s.verses ?? "",
+        destination: s.destination ?? "",
+      })),
+    );
     setEditing(true);
   }
 
@@ -32,6 +44,10 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
       await updateServiceAction(service.id, { sermon, scripture, note, songs });
       setEditing(false);
     });
+  }
+
+  function setDestination(linkId: string, destination: string) {
+    startTransition(() => setSongDestinationAction(linkId, destination));
   }
 
   function updateSong(i: number, field: keyof EditedSong, value: string) {
@@ -166,7 +182,7 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
             ))}
             <button
               type="button"
-              onClick={() => setSongs((prev) => [...prev, { hymnNumber: "", title: "", verses: "" }])}
+              onClick={() => setSongs((prev) => [...prev, { hymnNumber: "", title: "", verses: "", destination: "" }])}
               className="rounded-md border border-dashed border-border-strong px-3 py-1.5 text-sm font-semibold text-text-muted hover:border-accent hover:text-accent-strong"
             >
               + Add another song
@@ -192,13 +208,35 @@ export function ServiceRow({ service }: { service: ServiceWithSongs }) {
         ) : service.songs.length ? (
           <div className="flex flex-col gap-1">
             {service.songs.map((s) => (
-              <div key={s.id} className="flex flex-wrap items-baseline gap-2">
+              <div key={s.linkId} className="flex flex-wrap items-baseline gap-2">
                 <SongChip hymnNumber={s.hymnNumber} title={s.title} />
                 {s.verses && (
                   <span className="font-mono-tab flex-none rounded-full border border-border bg-surface-sunk px-2 py-0.5 text-xs text-text-muted">
                     {s.verses}
                   </span>
                 )}
+                <select
+                  value={s.destination ?? ""}
+                  onChange={(e) => setDestination(s.linkId, e.target.value)}
+                  aria-label={`Where ${s.title} goes on the Order of Service`}
+                  title="Where this song goes when pulled into the Order of Service"
+                  className="ml-auto rounded-full border border-border-strong bg-surface-sunk px-2.5 py-0.5 text-xs text-text-muted"
+                >
+                  <option value="">Worship</option>
+                  {knownHeaders
+                    .filter((h) => h.toLowerCase() !== "worship")
+                    // A destination set from a header that's since vanished
+                    // from every run sheet would otherwise just not appear
+                    // as an option — keep it selectable so the dropdown
+                    // shows what's actually stored instead of silently
+                    // falling back to Worship in the display.
+                    .concat(s.destination && !knownHeaders.includes(s.destination) ? [s.destination] : [])
+                    .map((h) => (
+                      <option key={h} value={h}>
+                        {h}
+                      </option>
+                    ))}
+                </select>
               </div>
             ))}
           </div>

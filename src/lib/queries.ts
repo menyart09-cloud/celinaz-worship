@@ -18,7 +18,14 @@ export type ServiceWithSongs = {
   sermon: string | null;
   scripture: string | null;
   note: string | null;
-  songs: { id: string; hymnNumber: string; title: string; verses: string | null }[];
+  songs: {
+    id: string;
+    linkId: string;
+    hymnNumber: string;
+    title: string;
+    verses: string | null;
+    destination: string | null;
+  }[];
 };
 
 export async function getAllServices(): Promise<ServiceWithSongs[]> {
@@ -34,6 +41,7 @@ export async function getAllServices(): Promise<ServiceWithSongs[]> {
       hymnNumber: songs.hymnNumber,
       title: songs.title,
       verses: serviceSongs.verses,
+      destination: serviceSongs.destination,
       position: serviceSongs.position,
     })
     .from(services)
@@ -48,8 +56,15 @@ export async function getAllServices(): Promise<ServiceWithSongs[]> {
       svc = { id: r.serviceId, date: r.date, sermon: r.sermon, scripture: r.scripture, note: r.note, songs: [] };
       byId.set(r.serviceId, svc);
     }
-    if (r.songId && r.title) {
-      svc.songs.push({ id: r.songId, hymnNumber: r.hymnNumber ?? "Comp", title: r.title, verses: r.verses });
+    if (r.songId && r.title && r.songLinkId) {
+      svc.songs.push({
+        id: r.songId,
+        linkId: r.songLinkId,
+        hymnNumber: r.hymnNumber ?? "Comp",
+        title: r.title,
+        verses: r.verses,
+        destination: r.destination,
+      });
     }
   }
   return [...byId.values()];
@@ -125,6 +140,30 @@ export async function getAssigneeNames() {
 export async function getServiceByDate(iso: string) {
   const all = await getAllServices();
   return all.find((s) => s.date === iso) ?? null;
+}
+
+// Every distinct Order of Service item header ever typed, for the Service
+// Log's "where does this song go" picker — newest use first, so headers
+// from the run sheet you actually use lately sort above old one-offs.
+// Grows on its own: type a new item label on any Order of Service and it
+// shows up here next time, no separate list to maintain.
+export async function getKnownOosHeaders(): Promise<string[]> {
+  const rows = await db
+    .select({ label: oosItems.label, date: oosItems.date })
+    .from(oosItems)
+    .orderBy(asc(oosItems.date));
+
+  const byKey = new Map<string, { display: string; date: string }>();
+  for (const r of rows) {
+    const display = r.label.split(":")[0].trim();
+    if (!display) continue;
+    const key = display.toLowerCase();
+    const existing = byKey.get(key);
+    if (!existing || r.date >= existing.date) byKey.set(key, { display, date: r.date });
+  }
+
+  const headers = [...byKey.values()].sort((a, b) => (a.date < b.date ? 1 : -1)).map((v) => v.display);
+  return headers.includes("Worship") ? headers : ["Worship", ...headers];
 }
 
 export async function searchByTitle(query: string) {

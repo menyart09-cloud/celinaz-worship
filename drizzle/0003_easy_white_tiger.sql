@@ -1,0 +1,1 @@
+ALTER TABLE "service_songs" ADD COLUMN "destination" text;

@@ -79,6 +79,10 @@ export const serviceSongs = pgTable("service_songs", {
     .references(() => songs.id, { onDelete: "restrict" }),
   verses: text("verses"),
   position: integer("position").notNull().default(0),
+  // Which Order of Service item this song belongs under when pulled — an
+  // item label like "Opening Song", matched loosely (see normalizeLabel).
+  // Null means Worship, the default for an ordinary logged song.
+  destination: text("destination"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

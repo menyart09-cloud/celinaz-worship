@@ -1,11 +1,15 @@
 import Link from "next/link";
-import { getAllServices, getSongLibrary } from "@/lib/queries";
+import { getAllServices, getSongLibrary, getKnownOosHeaders } from "@/lib/queries";
 import { ServiceLogList } from "./service-log-list";
 
 export const dynamic = "force-dynamic";
 
 export default async function LogPage() {
-  const [servicesList, library] = await Promise.all([getAllServices(), getSongLibrary()]);
+  const [servicesList, library, knownHeaders] = await Promise.all([
+    getAllServices(),
+    getSongLibrary(),
+    getKnownOosHeaders(),
+  ]);
 
   return (
     <div>
@@ -31,7 +35,7 @@ export default async function LogPage() {
         ))}
       </datalist>
 
-      <ServiceLogList servicesList={servicesList} />
+      <ServiceLogList servicesList={servicesList} knownHeaders={knownHeaders} />
     </div>
   );
 }
