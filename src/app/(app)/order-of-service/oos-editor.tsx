@@ -13,6 +13,7 @@ import {
   moveItemAction,
   updateItemFieldAction,
   removeSongFromItemAction,
+  moveSongToItemAction,
   addAssigneeNameAction,
   removeAssigneeNameAction,
   copyFromLastWeekAction,
@@ -290,6 +291,7 @@ export function OosEditor({
                 isEven={i % 2 === 1}
                 assigneeNames={assigneeNames}
                 library={library}
+                otherItems={items.filter((other) => other.id !== item.id)}
                 canMoveUp={i > 0}
                 canMoveDown={i < items.length - 1}
               />,
@@ -329,6 +331,7 @@ function OosRow({
   isEven,
   assigneeNames,
   library,
+  otherItems,
   canMoveUp,
   canMoveDown,
 }: {
@@ -336,6 +339,7 @@ function OosRow({
   isEven: boolean;
   assigneeNames: string[];
   library: SongLibraryRow[];
+  otherItems: OosItemWithSongs[];
   canMoveUp: boolean;
   canMoveDown: boolean;
 }) {
@@ -581,6 +585,25 @@ function OosRow({
             >
               <HymnBadge hymnNumber={s.hymnNumber} />
               <span className="font-medium">{s.title}</span>
+              {otherItems.length > 0 && (
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const targetId = e.target.value;
+                    if (targetId) startTransition(() => moveSongToItemAction(s.linkId, targetId));
+                  }}
+                  aria-label={`Move ${s.title} to a different item`}
+                  title="Move to a different item"
+                  className="no-print rounded border border-transparent bg-transparent py-0.5 pr-5 pl-1 text-xs text-text-faint hover:border-border-strong hover:bg-surface hover:text-accent-strong"
+                >
+                  <option value="">Move to…</option>
+                  {otherItems.map((other) => (
+                    <option key={other.id} value={other.id}>
+                      {other.label || "(untitled)"}
+                    </option>
+                  ))}
+                </select>
+              )}
               <button
                 type="button"
                 aria-label="Remove song"

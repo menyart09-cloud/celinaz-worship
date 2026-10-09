@@ -108,6 +108,37 @@ export async function removeSongFromItemAction(linkId: string) {
   revalidateOos();
 }
 
+// Moves one song to a different item on the same run sheet, in place — no
+// delete-and-re-add, and the move itself is excluded from the source item so
+// a later Pull can't quietly put it right back there.
+export async function moveSongToItemAction(linkId: string, targetItemId: string) {
+  const link = await db.query.oosItemSongs.findFirst({ where: eq(oosItemSongs.id, linkId) });
+  if (!link || link.oosItemId === targetItemId) return;
+
+  const alreadyOnTarget = await db.query.oosItemSongs.findFirst({
+    where: and(eq(oosItemSongs.oosItemId, targetItemId), eq(oosItemSongs.songId, link.songId)),
+  });
+  if (alreadyOnTarget) {
+    // Already there — nothing to move, just drop the stale copy.
+    await db.delete(oosItemSongs).where(eq(oosItemSongs.id, linkId));
+  } else {
+    const existing = await db.query.oosItemSongs.findMany({ where: eq(oosItemSongs.oosItemId, targetItemId) });
+    await db
+      .update(oosItemSongs)
+      .set({ oosItemId: targetItemId, position: existing.length })
+      .where(eq(oosItemSongs.id, linkId));
+  }
+
+  // Same bookkeeping as removing it outright — the song is just as
+  // deliberately not-here-anymore from the source item's point of view.
+  await db
+    .insert(oosItemExcludedSongs)
+    .values({ oosItemId: link.oosItemId, songId: link.songId })
+    .onConflictDoNothing();
+
+  revalidateOos();
+}
+
 export async function addAssigneeNameAction(name: string) {
   const trimmed = name.trim();
   if (!trimmed) return;
