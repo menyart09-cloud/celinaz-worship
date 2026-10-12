@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { isoToMdy } from "@/lib/dates";
 import { HymnBadge, SongChip } from "../_components/song-chip";
+import { updateSongAction } from "./actions";
 import type { SongLibraryRow } from "@/lib/queries";
 
 type SortKey = "hymn" | "title" | "source" | "uses";
@@ -124,29 +125,7 @@ export function SongsTable({ songs }: { songs: SongLibraryRow[] }) {
         {rows.length === 0 ? (
           <p className="p-6 text-center text-sm text-text-faint italic">No songs match.</p>
         ) : (
-          rows.map((s, i) => (
-            <div key={s.id} className={"p-3 " + (i > 0 ? "border-t border-border" : "")}>
-              {/* The hymn/Comp badge on the chip itself already says what the
-                  desktop table's separate Source column spells out — no need
-                  to repeat "Comp" twice right next to each other. */}
-              <SongChip hymnNumber={s.hymnNumber} title={s.title} />
-              <div className="mt-1 text-xs text-text-muted">
-                {s.useCount > 0 ? (
-                  <>
-                    {s.useCount} {s.useCount === 1 ? "use" : "uses"} ·{" "}
-                    {s.usedDates.map((d, di) => (
-                      <span key={d} className="font-mono-tab">
-                        {di > 0 ? " " : ""}
-                        {isoToMdy(d)}
-                      </span>
-                    ))}
-                  </>
-                ) : (
-                  <span className="text-text-faint italic">never used</span>
-                )}
-              </div>
-            </div>
-          ))
+          rows.map((s, i) => <SongRow key={s.id} song={s} bordered={i > 0} variant="mobile" />)
         )}
       </div>
 
@@ -165,48 +144,179 @@ export function SongsTable({ songs }: { songs: SongLibraryRow[] }) {
           </thead>
           <tbody>
             {rows.map((s) => (
-              <tr key={s.id} className="hover:bg-surface-alt">
-                <td className="border-t border-border px-3.5 py-2.5">
-                  <HymnBadge hymnNumber={s.hymnNumber} />
-                </td>
-                <td className="border-t border-border px-3.5 py-2.5">
-                  <SongChip hymnNumber={s.hymnNumber} title={s.title} hideBadge />
-                </td>
-                <td className="border-t border-border px-3.5 py-2.5">
-                  <span
-                    className={
-                      "rounded-full px-2 py-0.5 text-xs font-bold uppercase " +
-                      (s.source === "hymnal"
-                        ? "border border-border bg-surface-sunk text-text-muted"
-                        : "border border-accent-soft-border bg-accent-soft text-accent-strong")
-                    }
-                  >
-                    {s.source === "hymnal" ? "Hymnal" : "Comp"}
-                  </span>
-                </td>
-                <td className="border-t border-border px-3.5 py-2.5 text-sm text-text-muted">
-                  {s.useCount > 0 ? (
-                    <div>
-                      <div>
-                        {s.useCount} {s.useCount === 1 ? "use" : "uses"}
-                      </div>
-                      <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
-                        {s.usedDates.map((d) => (
-                          <span key={d} className="font-mono-tab text-xs text-text-faint">
-                            {isoToMdy(d)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <span className="text-text-faint italic">never used</span>
-                  )}
-                </td>
-              </tr>
+              <SongRow key={s.id} song={s} bordered variant="desktop" />
             ))}
           </tbody>
         </table>
       </div>
     </div>
+  );
+}
+
+function SongRow({
+  song,
+  bordered,
+  variant,
+}: {
+  song: SongLibraryRow;
+  bordered: boolean;
+  variant: "mobile" | "desktop";
+}) {
+  const [editing, setEditing] = useState(false);
+  const [hymnNumber, setHymnNumber] = useState(song.hymnNumber);
+  const [title, setTitle] = useState(song.title);
+  const [pending, startTransition] = useTransition();
+
+  function startEdit() {
+    setHymnNumber(song.hymnNumber);
+    setTitle(song.title);
+    setEditing(true);
+  }
+
+  function save() {
+    if (!title.trim()) return;
+    startTransition(async () => {
+      await updateSongAction(song.id, hymnNumber, title);
+      setEditing(false);
+    });
+  }
+
+  const editFields = (
+    <>
+      <input
+        value={hymnNumber}
+        onChange={(e) => setHymnNumber(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && save()}
+        placeholder="#"
+        title="Hymn # (leave blank for a chorus)"
+        className="font-mono-tab w-16 flex-none rounded-md border border-border-strong bg-surface px-2 py-1.5 text-center text-sm"
+      />
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && save()}
+        autoFocus
+        className="min-w-0 flex-1 rounded-md border border-border-strong bg-surface px-2 py-1.5 text-sm"
+      />
+      <button
+        type="button"
+        onClick={() => setEditing(false)}
+        className="flex-none rounded-md border border-border-strong px-3 py-1.5 text-sm font-semibold"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        onClick={save}
+        disabled={pending}
+        className="flex-none rounded-md border border-accent bg-accent px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-60"
+      >
+        {pending ? "Saving…" : "Save"}
+      </button>
+    </>
+  );
+
+  if (variant === "mobile") {
+    if (editing) {
+      return (
+        <div className={"flex items-center gap-2 bg-accent-soft p-3 " + (bordered ? "border-t border-border" : "")}>
+          {editFields}
+        </div>
+      );
+    }
+    return (
+      <div className={"flex items-start justify-between gap-2 p-3 " + (bordered ? "border-t border-border" : "")}>
+        <div>
+          {/* The hymn/Comp badge on the chip itself already says what the
+              desktop table's separate Source column spells out — no need
+              to repeat "Comp" twice right next to each other. */}
+          <SongChip hymnNumber={song.hymnNumber} title={song.title} />
+          <div className="mt-1 text-xs text-text-muted">
+            {song.useCount > 0 ? (
+              <>
+                {song.useCount} {song.useCount === 1 ? "use" : "uses"} ·{" "}
+                {song.usedDates.map((d, di) => (
+                  <span key={d} className="font-mono-tab">
+                    {di > 0 ? " " : ""}
+                    {isoToMdy(d)}
+                  </span>
+                ))}
+              </>
+            ) : (
+              <span className="text-text-faint italic">never used</span>
+            )}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={startEdit}
+          aria-label={`Edit ${song.title}`}
+          className="flex h-9 w-9 flex-none items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent-strong"
+        >
+          ✎
+        </button>
+      </div>
+    );
+  }
+
+  if (editing) {
+    return (
+      <tr className="bg-accent-soft">
+        <td className="border-t border-border px-3.5 py-2.5" colSpan={4}>
+          <div className="flex items-center gap-2">{editFields}</div>
+        </td>
+      </tr>
+    );
+  }
+
+  return (
+    <tr className="hover:bg-surface-alt">
+      <td className="border-t border-border px-3.5 py-2.5">
+        <HymnBadge hymnNumber={song.hymnNumber} />
+      </td>
+      <td className="border-t border-border px-3.5 py-2.5">
+        <div className="flex items-center gap-1">
+          <SongChip hymnNumber={song.hymnNumber} title={song.title} hideBadge />
+          <button
+            type="button"
+            onClick={startEdit}
+            aria-label={`Edit ${song.title}`}
+            className="flex h-7 w-7 flex-none items-center justify-center rounded-md text-text-faint hover:bg-accent-soft hover:text-accent-strong"
+          >
+            ✎
+          </button>
+        </div>
+      </td>
+      <td className="border-t border-border px-3.5 py-2.5">
+        <span
+          className={
+            "rounded-full px-2 py-0.5 text-xs font-bold uppercase " +
+            (song.source === "hymnal"
+              ? "border border-border bg-surface-sunk text-text-muted"
+              : "border border-accent-soft-border bg-accent-soft text-accent-strong")
+          }
+        >
+          {song.source === "hymnal" ? "Hymnal" : "Comp"}
+        </span>
+      </td>
+      <td className="border-t border-border px-3.5 py-2.5 text-sm text-text-muted">
+        {song.useCount > 0 ? (
+          <div>
+            <div>
+              {song.useCount} {song.useCount === 1 ? "use" : "uses"}
+            </div>
+            <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
+              {song.usedDates.map((d) => (
+                <span key={d} className="font-mono-tab text-xs text-text-faint">
+                  {isoToMdy(d)}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <span className="text-text-faint italic">never used</span>
+        )}
+      </td>
+    </tr>
   );
 }

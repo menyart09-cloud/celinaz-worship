@@ -12,7 +12,8 @@ export default async function SongsPage() {
         <h2 className="text-lg font-bold">Song Library</h2>
         <p className="mt-0.5 text-sm text-text-muted">
           Every hymn and chorus you&apos;ve actually used. Click a column to sort, click a song to
-          queue it for a future service. Songs you&apos;re only considering belong on the
+          queue it for a future service, or the ✎ to fix a typo in its title — that corrects it
+          everywhere it&apos;s been logged. Songs you&apos;re only considering belong on the
           Shortlist.
         </p>
       </div>
