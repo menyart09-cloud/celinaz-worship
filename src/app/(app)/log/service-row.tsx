@@ -222,9 +222,7 @@ export function ServiceRow({ service, knownHeaders }: { service: ServiceWithSong
                   title="Where this song goes when pulled into the Order of Service"
                   className="ml-auto rounded-full border border-border-strong bg-surface-sunk px-2.5 py-0.5 text-xs text-text-muted"
                 >
-                  <option value="">Worship</option>
                   {knownHeaders
-                    .filter((h) => h.toLowerCase() !== "worship")
                     // A destination set from a header that's since vanished
                     // from every run sheet would otherwise just not appear
                     // as an option — keep it selectable so the dropdown
@@ -232,7 +230,13 @@ export function ServiceRow({ service, knownHeaders }: { service: ServiceWithSong
                     // falling back to Worship in the display.
                     .concat(s.destination && !knownHeaders.includes(s.destination) ? [s.destination] : [])
                     .map((h) => (
-                      <option key={h} value={h}>
+                      // Worship is the stored default for an untagged song
+                      // (a null destination), so it keeps value="" — but it
+                      // still sits wherever knownHeaders actually placed it
+                      // in the run sheet, same as every other option,
+                      // instead of being pinned to the top regardless of
+                      // where it typically falls.
+                      <option key={h} value={h.toLowerCase() === "worship" ? "" : h}>
                         {h}
                       </option>
                     ))}

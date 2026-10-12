@@ -217,18 +217,27 @@ export async function getKnownOosHeaders(): Promise<string[]> {
     .sort((a, b) => b.relPositions.length - a.relPositions.length || (a.lastUsed < b.lastUsed ? 1 : -1))
     .slice(0, MAX_HEADERS);
 
+  // Worship is the stored default for a song with no destination picked
+  // (see serviceSongs.destination), so the picker always needs it as an
+  // option even if it didn't earn a spot on its own — but it still has to
+  // land in its own typical spot in the sort below, not bolted onto one
+  // end, or the one guaranteed-present option would be the one that visibly
+  // doesn't belong where it's shown.
+  const worshipKey = normalizeLabel("Worship");
+  if (!inRotation.some((e) => normalizeLabel(e.display) === worshipKey)) {
+    inRotation.push(byKey.get(worshipKey) ?? { display: "Worship", lastUsed: "", relPositions: [0.5] });
+  }
+
   // A header used only a couple times can still coincidentally land at the
   // exact same median as a well-established one (e.g. anything that
   // happened to open or close the service those times ties "Pre-Service"
   // at 0) — more occurrences is a more reliable read on where something
   // typically goes, so it wins ties instead of crowding out the real
   // pattern.
-  const headers = inRotation
+  return inRotation
     .map((e) => ({ display: e.display, typicalPosition: median(e.relPositions), uses: e.relPositions.length }))
     .sort((a, b) => a.typicalPosition - b.typicalPosition || b.uses - a.uses)
     .map((e) => e.display);
-
-  return headers.includes("Worship") ? headers : [...headers, "Worship"];
 }
 
 export async function searchByTitle(query: string) {
