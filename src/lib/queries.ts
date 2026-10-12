@@ -180,7 +180,7 @@ export async function getKnownOosHeaders(): Promise<string[]> {
     else byDate.set(r.date, [r]);
   }
 
-  const byKey = new Map<string, { display: string; lastUsed: string; relPositions: number[] }>();
+  const byKey = new Map<string, { display: string; lastUsed: string; firstUsed: string; relPositions: number[] }>();
   for (const dateRows of byDate.values()) {
     // Ranked by position within the date rather than using `position`
     // itself — removing an item doesn't renumber what's left, so raw
@@ -195,7 +195,7 @@ export async function getKnownOosHeaders(): Promise<string[]> {
 
       let entry = byKey.get(key);
       if (!entry) {
-        entry = { display, lastUsed: r.date, relPositions: [] };
+        entry = { display, lastUsed: r.date, firstUsed: r.date, relPositions: [] };
         byKey.set(key, entry);
       }
       entry.relPositions.push(relPosition);
@@ -204,17 +204,35 @@ export async function getKnownOosHeaders(): Promise<string[]> {
         entry.display = display;
         entry.lastUsed = r.date;
       }
+      if (r.date < entry.firstUsed) entry.firstUsed = r.date;
     });
   }
 
   // Keep only what's actually in rotation (2+ recent uses), then the
-  // MAX_HEADERS most-used of those — ties go to whichever was used more
-  // recently. Everything that doesn't make the cut is dropped before the
-  // run-sheet-order sort below, so a header just outside the top 12 never
-  // appears out of place at the bottom of the list; it just isn't there.
+  // MAX_HEADERS most-used of those — ranked by uses per week SINCE the
+  // header first showed up in the window, not raw count. Raw count alone
+  // would favor anything that's simply been around the whole window over
+  // something picked up recently and used every single week since — a
+  // week-7 habit used 6 times is in heavier rotation right now than a
+  // 26-week habit used 10 times, even though 10 > 6. Ties go to whichever
+  // was used more recently. Everything that doesn't make the cut is
+  // dropped before the run-sheet-order sort below, so a header just
+  // outside the top 12 never appears out of place at the bottom of the
+  // list; it just isn't there.
+  const today = todayIso();
+  function weeksSince(iso: string): number {
+    const [y1, m1, d1] = iso.split("-").map(Number);
+    const [y2, m2, d2] = today.split("-").map(Number);
+    const days = (Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000;
+    return Math.max(1, days / 7);
+  }
   const inRotation = [...byKey.values()]
     .filter((e) => e.relPositions.length >= 2)
-    .sort((a, b) => b.relPositions.length - a.relPositions.length || (a.lastUsed < b.lastUsed ? 1 : -1))
+    .sort(
+      (a, b) =>
+        b.relPositions.length / weeksSince(b.firstUsed) - a.relPositions.length / weeksSince(a.firstUsed) ||
+        (a.lastUsed < b.lastUsed ? 1 : -1),
+    )
     .slice(0, MAX_HEADERS);
 
   // Worship is the stored default for a song with no destination picked
@@ -225,7 +243,7 @@ export async function getKnownOosHeaders(): Promise<string[]> {
   // doesn't belong where it's shown.
   const worshipKey = normalizeLabel("Worship");
   if (!inRotation.some((e) => normalizeLabel(e.display) === worshipKey)) {
-    inRotation.push(byKey.get(worshipKey) ?? { display: "Worship", lastUsed: "", relPositions: [0.5] });
+    inRotation.push(byKey.get(worshipKey) ?? { display: "Worship", lastUsed: "", firstUsed: today, relPositions: [0.5] });
   }
 
   // A header used only a couple times can still coincidentally land at the

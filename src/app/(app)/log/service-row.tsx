@@ -207,42 +207,62 @@ export function ServiceRow({ service, knownHeaders }: { service: ServiceWithSong
           </div>
         ) : service.songs.length ? (
           <div className="flex flex-col gap-1">
-            {service.songs.map((s) => (
-              <div key={s.linkId} className="flex flex-wrap items-baseline gap-2">
-                <SongChip hymnNumber={s.hymnNumber} title={s.title} />
-                {s.verses && (
-                  <span className="font-mono-tab flex-none rounded-full border border-border bg-surface-sunk px-2 py-0.5 text-xs text-text-muted">
-                    {s.verses}
-                  </span>
-                )}
-                <select
-                  value={s.destination ?? ""}
-                  onChange={(e) => setDestination(s.linkId, e.target.value)}
-                  aria-label={`Where ${s.title} goes on the Order of Service`}
-                  title="Where this song goes when pulled into the Order of Service"
-                  className="ml-auto rounded-full border border-border-strong bg-surface-sunk px-2.5 py-0.5 text-xs text-text-muted"
-                >
-                  {knownHeaders
-                    // A destination set from a header that's since vanished
-                    // from every run sheet would otherwise just not appear
-                    // as an option — keep it selectable so the dropdown
-                    // shows what's actually stored instead of silently
-                    // falling back to Worship in the display.
-                    .concat(s.destination && !knownHeaders.includes(s.destination) ? [s.destination] : [])
-                    .map((h) => (
-                      // Worship is the stored default for an untagged song
-                      // (a null destination), so it keeps value="" — but it
-                      // still sits wherever knownHeaders actually placed it
-                      // in the run sheet, same as every other option,
-                      // instead of being pinned to the top regardless of
-                      // where it typically falls.
-                      <option key={h} value={h.toLowerCase() === "worship" ? "" : h}>
-                        {h}
-                      </option>
-                    ))}
-                </select>
-              </div>
-            ))}
+            {service.songs.map((s) => {
+              // A song's stored destination might differ only in casing from
+              // the header's current display casing (knownHeaders keeps
+              // whichever casing was MOST RECENTLY typed, which can drift
+              // over time) — matching that case-insensitively, the same way
+              // normalizeLabel does everywhere else, means a casing drift
+              // alone can't make this look "vanished" and get dumped as an
+              // unsorted extra option below.
+              const matchedHeader = s.destination
+                ? knownHeaders.find((h) => h.toLowerCase() === s.destination!.toLowerCase())
+                : undefined;
+              const isWorship = (matchedHeader ?? s.destination ?? "worship").toLowerCase() === "worship";
+              const selectValue = isWorship ? "" : (matchedHeader ?? s.destination ?? "");
+
+              return (
+                <div key={s.linkId} className="flex flex-wrap items-baseline gap-2">
+                  <SongChip hymnNumber={s.hymnNumber} title={s.title} />
+                  {s.verses && (
+                    <span className="font-mono-tab flex-none rounded-full border border-border bg-surface-sunk px-2 py-0.5 text-xs text-text-muted">
+                      {s.verses}
+                    </span>
+                  )}
+                  <select
+                    value={selectValue}
+                    onChange={(e) => setDestination(s.linkId, e.target.value)}
+                    aria-label={`Where ${s.title} goes on the Order of Service`}
+                    title="Where this song goes when pulled into the Order of Service"
+                    className="ml-auto rounded-full border border-border-strong bg-surface-sunk px-2.5 py-0.5 text-xs text-text-muted"
+                  >
+                    {knownHeaders
+                      // A destination set from a header that's genuinely not
+                      // in knownHeaders at all anymore (not just a casing
+                      // difference) would otherwise just not appear as an
+                      // option — keep it selectable so the dropdown shows
+                      // what's actually stored instead of silently falling
+                      // back to Worship in the display. It's appended, not
+                      // sorted into position, since there's no typical-
+                      // position data for it once it's dropped out of
+                      // rotation — but that's now the genuinely-rare case
+                      // rather than the default for every casing variant.
+                      .concat(!matchedHeader && s.destination ? [s.destination] : [])
+                      .map((h) => (
+                        // Worship is the stored default for an untagged song
+                        // (a null destination), so it keeps value="" — but it
+                        // still sits wherever knownHeaders actually placed it
+                        // in the run sheet, same as every other option,
+                        // instead of being pinned to the top regardless of
+                        // where it typically falls.
+                        <option key={h} value={h.toLowerCase() === "worship" ? "" : h}>
+                          {h}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <span className="text-sm text-text-faint italic">
