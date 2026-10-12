@@ -149,15 +149,16 @@ function median(nums: number[]): number {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
-// Every distinct Order of Service item header ever typed, for the Service
-// Log's "where does this song go" picker — ordered to read like a run
-// sheet, earliest-typical-item first, so the list itself says roughly
-// where in the service each header falls instead of being an arbitrary
-// jumble. "Typical" is each header's median position on the dates it's
-// been used, as a fraction of that date's item count (so a date with more
-// or fewer items than usual doesn't skew it). Grows on its own: type a new
-// item label on any Order of Service and it shows up here next time, no
-// separate list to maintain.
+// Every distinct Order of Service item header typed on at least two
+// different dates, for the Service Log's "where does this song go" picker —
+// ordered to read like a run sheet, earliest-typical-item first, so the
+// list itself says roughly where in the service each header falls instead
+// of being an arbitrary jumble. "Typical" is each header's median position
+// on the dates it's been used, as a fraction of that date's item count (so
+// a date with more or fewer items than usual doesn't skew it). A label
+// typed only once (a one-off note like "Call to Stillness") never shows up
+// here — it'd sit in the list forever for something that was never meant
+// to be a recurring destination. Use it twice and it earns its place.
 export async function getKnownOosHeaders(): Promise<string[]> {
   const rows = await db.select({ label: oosItems.label, date: oosItems.date, position: oosItems.position }).from(oosItems);
 
@@ -195,12 +196,13 @@ export async function getKnownOosHeaders(): Promise<string[]> {
     });
   }
 
-  // A header used only once or twice can coincidentally land at the exact
+  // A header used only twice can still coincidentally land at the exact
   // same median as a well-established one (e.g. anything that happened to
-  // open or close the service that one time ties "Pre-Service" at 0) — more
-  // occurrences is a more reliable read on where something typically goes,
-  // so it wins ties instead of crowding out the real pattern.
+  // open or close the service those two times ties "Pre-Service" at 0) —
+  // more occurrences is a more reliable read on where something typically
+  // goes, so it wins ties instead of crowding out the real pattern.
   const headers = [...byKey.values()]
+    .filter((e) => e.relPositions.length >= 2)
     .map((e) => ({ display: e.display, typicalPosition: median(e.relPositions), uses: e.relPositions.length }))
     .sort((a, b) => a.typicalPosition - b.typicalPosition || b.uses - a.uses)
     .map((e) => e.display);
