@@ -20,3 +20,9 @@ export function isSunday(iso: string): boolean {
 export function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
+
+export function monthsAgoIso(months: number): string {
+  const d = new Date();
+  d.setUTCMonth(d.getUTCMonth() - months);
+  return d.toISOString().slice(0, 10);
+}

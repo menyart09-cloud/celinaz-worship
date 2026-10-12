@@ -1,4 +1,4 @@
-import { asc, desc, eq, isNotNull, lt, sql } from "drizzle-orm";
+import { asc, desc, eq, gte, isNotNull, lt, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   services,
@@ -10,7 +10,7 @@ import {
   oosItems,
   oosItemSongs,
 } from "@/db/schema";
-import { todayIso } from "./dates";
+import { monthsAgoIso, todayIso } from "./dates";
 import { normalizeLabel } from "./labels";
 
 export type ServiceWithSongs = {
@@ -149,18 +149,29 @@ function median(nums: number[]): number {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
-// Every distinct Order of Service item header typed on at least two
-// different dates, for the Service Log's "where does this song go" picker —
-// ordered to read like a run sheet, earliest-typical-item first, so the
-// list itself says roughly where in the service each header falls instead
-// of being an arbitrary jumble. "Typical" is each header's median position
-// on the dates it's been used, as a fraction of that date's item count (so
-// a date with more or fewer items than usual doesn't skew it). A label
-// typed only once (a one-off note like "Call to Stillness") never shows up
-// here — it'd sit in the list forever for something that was never meant
-// to be a recurring destination. Use it twice and it earns its place.
+// How far back "currently used" looks, and how many headers the picker
+// ever shows at once. Both exist so the list tracks how the service runs
+// *now* rather than slowly accumulating every label ever typed — a header
+// used constantly two seasons ago but dropped since falls back out on its
+// own, the same way a one-off from last month never got in to begin with.
+const RECENT_MONTHS = 6;
+const MAX_HEADERS = 12;
+
+// The Service Log's "where does this song go" picker, limited to headers
+// actually in current rotation: used on 2+ dates within the last
+// RECENT_MONTHS, and capped at the MAX_HEADERS most-used of those — so the
+// list stays short instead of being something to scroll through. Within
+// that set, displayed in run-sheet order (earliest-typical-item first)
+// rather than by frequency, so the list still reads like a bulletin.
+// "Typical" is each header's median position on the dates it's been used,
+// as a fraction of that date's item count (so a date with more or fewer
+// items than usual doesn't skew it).
 export async function getKnownOosHeaders(): Promise<string[]> {
-  const rows = await db.select({ label: oosItems.label, date: oosItems.date, position: oosItems.position }).from(oosItems);
+  const cutoff = monthsAgoIso(RECENT_MONTHS);
+  const rows = await db
+    .select({ label: oosItems.label, date: oosItems.date, position: oosItems.position })
+    .from(oosItems)
+    .where(gte(oosItems.date, cutoff));
 
   const byDate = new Map<string, typeof rows>();
   for (const r of rows) {
@@ -196,13 +207,23 @@ export async function getKnownOosHeaders(): Promise<string[]> {
     });
   }
 
-  // A header used only twice can still coincidentally land at the exact
-  // same median as a well-established one (e.g. anything that happened to
-  // open or close the service those two times ties "Pre-Service" at 0) —
-  // more occurrences is a more reliable read on where something typically
-  // goes, so it wins ties instead of crowding out the real pattern.
-  const headers = [...byKey.values()]
+  // Keep only what's actually in rotation (2+ recent uses), then the
+  // MAX_HEADERS most-used of those — ties go to whichever was used more
+  // recently. Everything that doesn't make the cut is dropped before the
+  // run-sheet-order sort below, so a header just outside the top 12 never
+  // appears out of place at the bottom of the list; it just isn't there.
+  const inRotation = [...byKey.values()]
     .filter((e) => e.relPositions.length >= 2)
+    .sort((a, b) => b.relPositions.length - a.relPositions.length || (a.lastUsed < b.lastUsed ? 1 : -1))
+    .slice(0, MAX_HEADERS);
+
+  // A header used only a couple times can still coincidentally land at the
+  // exact same median as a well-established one (e.g. anything that
+  // happened to open or close the service those times ties "Pre-Service"
+  // at 0) — more occurrences is a more reliable read on where something
+  // typically goes, so it wins ties instead of crowding out the real
+  // pattern.
+  const headers = inRotation
     .map((e) => ({ display: e.display, typicalPosition: median(e.relPositions), uses: e.relPositions.length }))
     .sort((a, b) => a.typicalPosition - b.typicalPosition || b.uses - a.uses)
     .map((e) => e.display);
