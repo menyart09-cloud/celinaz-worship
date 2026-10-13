@@ -96,8 +96,8 @@ export function SongsTable({ songs }: { songs: SongLibraryRow[] }) {
         <span>Sort:</span>
         {(
           [
-            { key: "title", label: "Title" },
             { key: "hymn", label: "Hymn #" },
+            { key: "title", label: "Title" },
             { key: "source", label: "Source" },
             { key: "uses", label: "Usage" },
           ] as { key: SortKey; label: string }[]
