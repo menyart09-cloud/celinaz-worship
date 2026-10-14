@@ -63,6 +63,7 @@ export function OosEditor({
   const [justCopied, setJustCopied] = useState(false);
   const [pdfMenuOpen, setPdfMenuOpen] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
   const canShareFiles = useSyncExternalStore(noopSubscribe, getCanShareFiles, getServerCanShareFiles);
   const pdfMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -140,9 +141,14 @@ export function OosEditor({
     return `order-of-service-${date}.pdf`;
   }
 
-  function handleCreatePdf() {
-    setPdfBlob(buildOrderOfServicePdf(date, items));
-    setPdfMenuOpen(true);
+  async function handleCreatePdf() {
+    setPdfGenerating(true);
+    try {
+      setPdfBlob(await buildOrderOfServicePdf(date, items));
+      setPdfMenuOpen(true);
+    } finally {
+      setPdfGenerating(false);
+    }
   }
 
   function handleDownloadPdf() {
@@ -193,9 +199,10 @@ export function OosEditor({
               <button
                 type="button"
                 onClick={handleCreatePdf}
-                className="rounded-lg border border-accent bg-surface px-3 py-1.5 text-sm font-semibold text-accent-strong hover:bg-accent-soft"
+                disabled={pdfGenerating}
+                className="rounded-lg border border-accent bg-surface px-3 py-1.5 text-sm font-semibold text-accent-strong hover:bg-accent-soft disabled:opacity-60"
               >
-                📄 Create PDF
+                {pdfGenerating ? "Generating…" : "📄 Create PDF"}
               </button>
               {pdfMenuOpen && (
                 <div className="absolute right-0 top-full z-20 mt-1 w-56 rounded-lg border border-border-strong bg-surface p-1.5 shadow-lg">
@@ -668,65 +675,180 @@ function buildSongsShareText(date: string, items: OosItemWithSongs[]): string {
   return lines.join("\n");
 }
 
+// Fetches a same-origin static asset and hands it back as a data URI --
+// jsPDF's addImage needs the image bytes already in hand, not a URL to go
+// fetch itself.
+async function loadImageDataUri(src: string): Promise<string> {
+  const res = await fetch(src);
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+// jsPDF has no native gradient fill, so this fakes one the way a raster
+// gradient has always been faked: enough thin vertical slices, each one
+// flat-filled with the color interpolated at that point, that the seams
+// disappear at normal viewing/print resolution. Same four stops as the
+// browser print view's CSS gradient (globals.css's .oos-print-bar), so the
+// PDF and the printed page read as the same design, not two approximations
+// of it.
+function drawGradientBar(doc: InstanceType<typeof jsPDF>, x: number, y: number, w: number, h: number) {
+  const stops: [number, string][] = [
+    [0, "#0a3b64"],
+    [0.45, "#1f5c8a"],
+    [0.75, "#5286ad"],
+    [1, "#96b4cc"],
+  ];
+  const steps = 80;
+  const sliceWidth = w / steps;
+  for (let i = 0; i < steps; i++) {
+    const t = i / (steps - 1);
+    let [t0, c0] = stops[0];
+    let [t1, c1] = stops[stops.length - 1];
+    for (let k = 0; k < stops.length - 1; k++) {
+      if (t >= stops[k][0] && t <= stops[k + 1][0]) {
+        [t0, c0] = stops[k];
+        [t1, c1] = stops[k + 1];
+        break;
+      }
+    }
+    const localT = t1 === t0 ? 0 : (t - t0) / (t1 - t0);
+    const rgb0 = hexToRgb(c0);
+    const rgb1 = hexToRgb(c1);
+    const r = rgb0[0] + (rgb1[0] - rgb0[0]) * localT;
+    const g = rgb0[1] + (rgb1[1] - rgb0[1]) * localT;
+    const b = rgb0[2] + (rgb1[2] - rgb0[2]) * localT;
+    doc.setFillColor(r, g, b);
+    // The +0.75 overlap keeps adjacent slices from leaving hairline white
+    // gaps between them at render resolution.
+    doc.rect(x + i * sliceWidth, y, sliceWidth + 0.75, h, "F");
+  }
+}
+
+type PdfLine = { text: string; bold: boolean; indent: number };
+
+// Same branching as PrintItem (see below): a trailing colon the owner
+// already typed is stripped, "Opening Song" inlines its one song when
+// there's no assignee, and detail always gets its own bulleted line
+// regardless of which headline branch fired. Lines come back pre-wrapped
+// to the page width so the caller can measure a whole item's height before
+// committing it to a page or drawing its background.
+function buildItemLines(doc: InstanceType<typeof jsPDF>, item: OosItemWithSongs, maxWidth: number): PdfLine[] {
+  const label = item.label.replace(/:+\s*$/, "");
+  const inlineSong =
+    label === "Opening Song" && !item.assignee && item.songs.length === 1 ? item.songs[0] : null;
+  const listSongs = inlineSong ? [] : item.songs;
+
+  let headLine = label;
+  if (item.assignee) {
+    headLine += `: ${item.assignee}`;
+  } else if (inlineSong) {
+    headLine += `: ${inlineSong.title} ${songTag(inlineSong.hymnNumber)}`.trimEnd();
+  } else if (item.detail || listSongs.length > 0) {
+    headLine += ":";
+  }
+
+  const lines: PdfLine[] = [];
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  for (const l of doc.splitTextToSize(headLine, maxWidth) as string[]) {
+    lines.push({ text: l, bold: true, indent: 0 });
+  }
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(14);
+  if (item.detail) {
+    for (const l of doc.splitTextToSize(`• ${item.detail}`, maxWidth - 16) as string[]) {
+      lines.push({ text: l, bold: false, indent: 16 });
+    }
+  }
+  listSongs.forEach((s, i) => {
+    const text = `${i + 1}. ${s.title} ${songTag(s.hymnNumber)}`.trimEnd();
+    for (const l of doc.splitTextToSize(text, maxWidth - 16) as string[]) {
+      lines.push({ text: l, bold: false, indent: 16 });
+    }
+  });
+
+  return lines;
+}
+
 // Same content and line-by-line shape as PrintItem/PrintView (the full run
 // sheet, not just songs — this is "the Order of Service", not the text-share
-// summary), just drawn directly with jsPDF instead of relying on the
-// browser's print engine. That trades away the page's actual Comic Neue
-// font (jsPDF ships standard PDF fonts only; embedding a custom TTF is more
-// than this needs) for a PDF that's generated instantly, client-side, with
-// no server round-trip.
-function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): Blob {
+// summary) — logo, title, date, the navy gradient bar, and the same
+// alternating row background, just drawn directly with jsPDF instead of
+// relying on the browser's print engine. That trades away the page's
+// actual Comic Neue font (jsPDF ships standard PDF fonts only; embedding a
+// custom TTF is more than this needs) for a PDF that's generated client-side
+// with no server round-trip — the logo load is the only async step.
+async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): Promise<Blob> {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   const margin = 36;
   const pageHeight = doc.internal.pageSize.getHeight();
   const pageWidth = doc.internal.pageSize.getWidth();
   const maxWidth = pageWidth - margin * 2;
+  const lineHeight = 14 * 1.35;
   let y = margin;
 
-  function addLine(text: string, opts: { size: number; bold?: boolean; indent?: number }) {
-    const indent = opts.indent ?? 0;
-    doc.setFont("helvetica", opts.bold ? "bold" : "normal");
-    doc.setFontSize(opts.size);
-    const lineHeight = opts.size * 1.35;
-    const wrapped = doc.splitTextToSize(text, maxWidth - indent) as string[];
-    for (const line of wrapped) {
-      if (y + lineHeight > pageHeight - margin) {
+  const logoDataUri = await loadImageDataUri("/logo.png");
+  const logoSize = 34;
+  doc.addImage(logoDataUri, "PNG", margin, y, logoSize, logoSize);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Order of Service", margin + logoSize + 12, y + logoSize / 2 + 7);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(115, 108, 94);
+  const dateText = isoToMdy(date);
+  doc.text(dateText, margin + maxWidth - doc.getTextWidth(dateText), y + logoSize / 2 + 4);
+  doc.setTextColor(0, 0, 0);
+
+  y += logoSize + 14;
+  drawGradientBar(doc, margin, y, maxWidth, 7);
+  y += 7 + 16;
+
+  if (items.length === 0) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(14);
+    doc.text("Nothing here yet.", margin, y);
+  } else {
+    items.forEach((item, i) => {
+      const lines = buildItemLines(doc, item, maxWidth - 16);
+      const blockHeight = lines.length * lineHeight + 10;
+
+      if (y + blockHeight > pageHeight - margin) {
         doc.addPage();
         y = margin;
       }
-      doc.text(line, margin + indent, y);
-      y += lineHeight;
-    }
-  }
 
-  addLine(`${isoToMdy(date)} Order of Service`, { size: 20, bold: true });
-  y += 8;
-
-  if (items.length === 0) {
-    addLine("Nothing here yet.", { size: 14 });
-  } else {
-    for (const item of items) {
-      const label = item.label.replace(/:+\s*$/, "");
-      const inlineSong =
-        label === "Opening Song" && !item.assignee && item.songs.length === 1 ? item.songs[0] : null;
-      const listSongs = inlineSong ? [] : item.songs;
-
-      let headLine = label;
-      if (item.assignee) {
-        headLine += `: ${item.assignee}`;
-      } else if (inlineSong) {
-        headLine += `: ${inlineSong.title} ${songTag(inlineSong.hymnNumber)}`.trimEnd();
-      } else if (item.detail || listSongs.length > 0) {
-        headLine += ":";
+      // Same stripe color as the browser print view's .oos-print-stripe --
+      // fixed, not a theme token, since paper is always white regardless of
+      // the owner's screen being in dark mode.
+      if (i % 2 === 1) {
+        doc.setFillColor(243, 242, 238);
+        doc.rect(margin - 6, y - 3, maxWidth + 12, blockHeight, "F");
       }
-      addLine(headLine, { size: 14, bold: true });
 
-      if (item.detail) addLine(`• ${item.detail}`, { size: 14, indent: 16 });
-      listSongs.forEach((s, i) =>
-        addLine(`${i + 1}. ${s.title} ${songTag(s.hymnNumber)}`.trimEnd(), { size: 14, indent: 16 }),
-      );
-      y += 10;
-    }
+      let ly = y + 12;
+      for (const line of lines) {
+        doc.setFont("helvetica", line.bold ? "bold" : "normal");
+        doc.setFontSize(14);
+        doc.text(line.text, margin + line.indent, ly);
+        ly += lineHeight;
+      }
+      y += blockHeight + 4;
+    });
   }
 
   return doc.output("blob");
