@@ -10,10 +10,10 @@
   --border-strong: rgba(30, 25, 15, 0.18);
   --text-muted: #736c5e;
   --text-faint: #a49c8b;
-  --accent: #a3402b;
-  --accent-strong: #7a2f20;
-  --accent-soft: #f6e7e1;
-  --accent-soft-border: #e6c3b6;
+  --accent: #1f5c8a;
+  --accent-strong: #0a3b64;
+  --accent-soft: #e7eef4;
+  --accent-soft-border: #c2d4e2;
   --good: #3f7d4f;
   --good-soft: #e5f0e6;
   --warn: #a3752b;
@@ -53,10 +53,10 @@
     --border-strong: rgba(240, 232, 218, 0.2);
     --text-muted: #b3a996;
     --text-faint: #7d7461;
-    --accent: #e08a63;
-    --accent-strong: #f0ac8c;
-    --accent-soft: #332420;
-    --accent-soft-border: #573327;
+    --accent: #6fa3cc;
+    --accent-strong: #9cc3e3;
+    --accent-soft: #16283a;
+    --accent-soft-border: #2b4760;
     --good: #7fbf8f;
     --good-soft: #203023;
     --warn: #d9b06b;
@@ -100,4 +100,20 @@ body {
 
 @page {
   margin: 0.5in;
+}
+
+/* Printed paper is always white, regardless of the browser's dark/light
+   setting — so both of these are fixed colors, not theme tokens, and both
+   force Chrome/Safari/Firefox to print their background without the person
+   needing to turn on "Background graphics" first. */
+.oos-print-stripe {
+  background: #f3f2ee;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.oos-print-bar {
+  background: linear-gradient(90deg, #0a3b64 0%, #1f5c8a 45%, #5286ad 75%, #96b4cc 100%);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }

@@ -736,7 +736,7 @@ function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): Blob {
 // songs either inline (a single song with no assignee, e.g. "Opening Song:
 // Hosanna (comp)") or as a numbered list — matching how the owner formatted
 // these by hand in Notes, not the app's card-editor look.
-function PrintItem({ item }: { item: OosItemWithSongs }) {
+function PrintItem({ item, isEven }: { item: OosItemWithSongs; isEven: boolean }) {
   // Some labels already end with a colon the owner typed themselves
   // (habit from Notes) — strip it here so the line below never doubles up
   // into "Label::" when we add our own separator.
@@ -762,7 +762,7 @@ function PrintItem({ item }: { item: OosItemWithSongs }) {
   }
 
   return (
-    <div className="mb-3">
+    <div className={"mb-1 rounded-md px-3 py-2 " + (isEven ? "oos-print-stripe" : "")}>
       <p className="text-xl">{headLine}</p>
       {item.detail && <p className="pl-4 text-xl before:mr-1.5 before:content-['•']">{item.detail}</p>}
       {listSongs.map((s, i) => (
@@ -777,11 +777,20 @@ function PrintItem({ item }: { item: OosItemWithSongs }) {
 function PrintView({ date, items }: { date: string; items: OosItemWithSongs[] }) {
   return (
     <div className="mx-auto max-w-2xl">
-      <p className="mb-4 text-2xl font-bold">{isoToMdy(date)} Order of Service</p>
+      <div className="mb-3 flex items-center gap-3">
+        {/* A plain <img>, not next/image — this only ever renders for
+            print/preview, where Next's lazy-loading and layout machinery
+            buy nothing and just add a reason the logo might not be ready
+            in time. */}
+        <img src="/logo.png" alt="" className="h-10 w-10 flex-none rounded-full" />
+        <p className="text-2xl font-bold">Order of Service</p>
+        <p className="ml-auto text-sm font-semibold text-text-muted">{isoToMdy(date)}</p>
+      </div>
+      <div className="oos-print-bar mb-4 h-[9px] rounded-full" />
       {items.length === 0 ? (
         <p className="text-xl text-text-faint italic">Nothing here yet.</p>
       ) : (
-        items.map((item) => <PrintItem key={item.id} item={item} />)
+        items.map((item, i) => <PrintItem key={item.id} item={item} isEven={i % 2 === 1} />)
       )}
     </div>
   );
