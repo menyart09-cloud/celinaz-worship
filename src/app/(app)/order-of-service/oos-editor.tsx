@@ -823,8 +823,11 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
     doc.setFontSize(14);
     doc.text("Nothing here yet.", margin, y);
   } else {
+    // Each item's own row number, not the song lists under it (those keep
+    // their own "1. Song Title" numbering, untouched and unrelated).
+    const numberColWidth = 22;
     items.forEach((item, i) => {
-      const lines = buildItemLines(doc, item, maxWidth - 16);
+      const lines = buildItemLines(doc, item, maxWidth - 16 - numberColWidth);
       const blockHeight = lines.length * lineHeight + 10;
 
       if (y + blockHeight > pageHeight - margin) {
@@ -840,11 +843,19 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
         doc.rect(margin - 6, y - 3, maxWidth + 12, blockHeight, "F");
       }
 
+      // Same fixed navy as the print view's number column, for the same
+      // "always the same regardless of dark mode" reason as the stripe.
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(10, 59, 100);
+      doc.text(`${i + 1}.`, margin + numberColWidth - 4, y + 12, { align: "right" });
+      doc.setTextColor(0, 0, 0);
+
       let ly = y + 12;
       for (const line of lines) {
         doc.setFont("helvetica", line.bold ? "bold" : "normal");
         doc.setFontSize(14);
-        doc.text(line.text, margin + line.indent, ly);
+        doc.text(line.text, margin + numberColWidth + line.indent, ly);
         ly += lineHeight;
       }
       y += blockHeight + 4;
@@ -858,7 +869,7 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
 // songs either inline (a single song with no assignee, e.g. "Opening Song:
 // Hosanna (comp)") or as a numbered list — matching how the owner formatted
 // these by hand in Notes, not the app's card-editor look.
-function PrintItem({ item, isEven }: { item: OosItemWithSongs; isEven: boolean }) {
+function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: number; isEven: boolean }) {
   // Some labels already end with a colon the owner typed themselves
   // (habit from Notes) — strip it here so the line below never doubles up
   // into "Label::" when we add our own separator.
@@ -884,14 +895,22 @@ function PrintItem({ item, isEven }: { item: OosItemWithSongs; isEven: boolean }
   }
 
   return (
-    <div className={"mb-1 rounded-md px-3 py-2 " + (isEven ? "oos-print-stripe" : "")}>
-      <p className="text-xl">{headLine}</p>
-      {item.detail && <p className="pl-4 text-xl before:mr-1.5 before:content-['•']">{item.detail}</p>}
-      {listSongs.map((s, i) => (
-        <p key={s.linkId} className="pl-4 text-xl">
-          {i + 1}. {s.title} {songTag(s.hymnNumber)}
-        </p>
-      ))}
+    <div className={"mb-1 flex gap-2.5 rounded-md px-3 py-2 " + (isEven ? "oos-print-stripe" : "")}>
+      {/* A fixed navy, not text-accent — this number has to read the same
+          regardless of the browser's dark/light setting, same reasoning as
+          the stripe and header bar above it. */}
+      <p className="w-6 flex-none text-right text-xl font-bold" style={{ color: "#0a3b64" }}>
+        {index}.
+      </p>
+      <div className="min-w-0 flex-1">
+        <p className="text-xl">{headLine}</p>
+        {item.detail && <p className="pl-4 text-xl before:mr-1.5 before:content-['•']">{item.detail}</p>}
+        {listSongs.map((s, i) => (
+          <p key={s.linkId} className="pl-4 text-xl">
+            {i + 1}. {s.title} {songTag(s.hymnNumber)}
+          </p>
+        ))}
+      </div>
     </div>
   );
 }
@@ -912,7 +931,7 @@ function PrintView({ date, items }: { date: string; items: OosItemWithSongs[] })
       {items.length === 0 ? (
         <p className="text-xl text-text-faint italic">Nothing here yet.</p>
       ) : (
-        items.map((item, i) => <PrintItem key={item.id} item={item} isEven={i % 2 === 1} />)
+        items.map((item, i) => <PrintItem key={item.id} item={item} index={i + 1} isEven={i % 2 === 1} />)
       )}
     </div>
   );

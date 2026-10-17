@@ -80,6 +80,22 @@ body {
     display: none !important;
   }
 
+  /* Paper is always white, so the print view's text needs to always be
+     the light-mode colors too, not whatever the browser's current
+     dark/light setting happens to be — otherwise printing from a browser
+     in dark mode puts near-white text on white paper. The stripe and the
+     header bar already hardcode their own colors for the same reason;
+     this covers everything else (headline, detail, date, muted text)
+     that still goes through these tokens. */
+  :root {
+    --foreground: #221f19;
+    --text-muted: #736c5e;
+    --text-faint: #a49c8b;
+    --background: #faf9f6;
+    --surface: #ffffff;
+    --surface-alt: #f3f2ee;
+  }
+
   /* The on-screen layout stretches the page to fill the viewport (via
      min-h-full/flex-1) so a sticky header behaves correctly — but that
      forces print content to be at least one full page tall even when it's
