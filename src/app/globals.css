@@ -133,3 +133,13 @@ body {
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
+
+/* Forces an actual page break right before whichever item PrintView
+   measured as the first to cross the page boundary, so a long run sheet
+   starts its second page here deliberately instead of wherever the
+   browser's own pagination happens to land (which could slice an item in
+   half). Inert outside paginated contexts, so no @media print needed. */
+.oos-print-continuation {
+  break-before: page;
+  page-break-before: always;
+}

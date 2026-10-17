@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
+import { flushSync } from "react-dom";
 import jsPDF from "jspdf";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { OosItemWithSongs, SongLibraryRow } from "@/lib/queries";
@@ -327,7 +328,7 @@ export function OosEditor({
           `print:block` makes it (and only it) visible when actually printing,
           regardless of whether Preview was opened first. */}
       <div className={(previewing ? "block " : "hidden ") + "print:block"}>
-        <PrintView date={date} items={items} />
+        <PrintView date={date} items={items} previewing={previewing} />
       </div>
     </div>
   );
@@ -734,6 +735,26 @@ function drawGradientBar(doc: InstanceType<typeof jsPDF>, x: number, y: number, 
   }
 }
 
+// Drawn at the top of any page past the first, once an item doesn't fit on
+// the page it was about to go on — no logo, no gradient bar, matching the
+// browser print view's own .oos-print-continuation, so a run sheet long
+// enough to spill over still reads as "still this sheet" rather than a
+// loose page of numbers with no header. Returns the y position content
+// should resume at.
+function drawContinuationHeader(doc: InstanceType<typeof jsPDF>, margin: number, maxWidth: number, dateText: string): number {
+  let y = margin;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(115, 108, 94);
+  doc.text(`Order of Service  ·  ${dateText}  ·  continued`, margin, y);
+  doc.setTextColor(0, 0, 0);
+  y += 10;
+  doc.setDrawColor(225, 222, 215);
+  doc.line(margin, y, margin + maxWidth, y);
+  y += 16;
+  return y;
+}
+
 type PdfLine = { text: string; bold: boolean; indent: number };
 
 // Same branching as PrintItem (see below): a trailing colon the owner
@@ -824,15 +845,19 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
     doc.text("Nothing here yet.", margin, y);
   } else {
     // Each item's own row number, not the song lists under it (those keep
-    // their own "1. Song Title" numbering, untouched and unrelated).
-    const numberColWidth = 22;
+    // their own "1. Song Title" numbering, untouched and unrelated). Black
+    // and regular weight, with a wide gap before the text, matching the
+    // print view -- not bold, same reasoning as there: no font-quirk risk
+    // in jsPDF's own "helvetica", but keeping both renders visually
+    // identical is the whole point.
+    const numberColWidth = 30;
     items.forEach((item, i) => {
       const lines = buildItemLines(doc, item, maxWidth - 16 - numberColWidth);
       const blockHeight = lines.length * lineHeight + 10;
 
       if (y + blockHeight > pageHeight - margin) {
         doc.addPage();
-        y = margin;
+        y = drawContinuationHeader(doc, margin, maxWidth, dateText);
       }
 
       // Same stripe color as the browser print view's .oos-print-stripe --
@@ -843,13 +868,10 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
         doc.rect(margin - 6, y - 3, maxWidth + 12, blockHeight, "F");
       }
 
-      // Same fixed navy as the print view's number column, for the same
-      // "always the same regardless of dark mode" reason as the stripe.
-      doc.setFont("helvetica", "bold");
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(14);
-      doc.setTextColor(10, 59, 100);
-      doc.text(`${i + 1}.`, margin + numberColWidth - 4, y + 12, { align: "right" });
       doc.setTextColor(0, 0, 0);
+      doc.text(`${i + 1}.`, margin + numberColWidth - 8, y + 12, { align: "right" });
 
       let ly = y + 12;
       for (const line of lines) {
@@ -895,11 +917,17 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
   }
 
   return (
-    <div className={"mb-1 flex gap-2.5 rounded-md px-3 py-2 " + (isEven ? "oos-print-stripe" : "")}>
-      {/* A fixed navy, not text-accent — this number has to read the same
-          regardless of the browser's dark/light setting, same reasoning as
-          the stripe and header bar above it. */}
-      <p className="w-6 flex-none text-right text-xl font-bold" style={{ color: "#0a3b64" }}>
+    <div className={"mb-1 flex gap-6 rounded-md px-3 py-2 break-inside-avoid-page " + (isEven ? "oos-print-stripe" : "")}>
+      {/* Black, not navy or text-accent: fixed either way so it reads the
+          same regardless of the browser's dark/light setting, same
+          reasoning as the stripe and header bar above it. Regular weight,
+          not bold: the page's font stack leads with "Noteworthy", a macOS
+          system font whose bold cut isn't a heavier version of the light
+          cut but a visibly larger, chunkier design — bolding just this
+          column made the numbers balloon next to the rest of the
+          (unbolded) text. Color plus the wider gap before the text is
+          enough to read as its own column without it. */}
+      <p className="w-6 flex-none text-right text-xl" style={{ color: "#000000" }}>
         {index}.
       </p>
       <div className="min-w-0 flex-1">
@@ -915,10 +943,66 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
   );
 }
 
-function PrintView({ date, items }: { date: string; items: OosItemWithSongs[] }) {
+// A US Letter page at the app's own 0.5in @page margin (globals.css) leaves
+// a 10in printable height — 960px at the standard 96 CSS-px/inch browsers
+// use for @page sizing. A small buffer under that keeps the estimate on
+// the safe side of the real page boundary.
+const PRINTABLE_HEIGHT_PX = 950;
+
+function PrintView({ date, items, previewing }: { date: string; items: OosItemWithSongs[]; previewing: boolean }) {
+  const [breakBeforeIndex, setBreakBeforeIndex] = useState<number | null>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Most weeks never come close to filling a page, so this is usually a
+  // no-op — but a rare heavy week (a holiday program, a baptism Sunday)
+  // can run long enough to need a second page. Rather than let the
+  // browser's own pagination slice whichever item happens to straddle the
+  // boundary, this measures the actual rendered height of each item
+  // (same width and font as what prints, since nothing here changes
+  // between the on-screen preview and the print output) and finds the
+  // first one that would cross the page boundary, so a real page break —
+  // with a "continued" marker — can be forced right before it instead.
+  const measure = useCallback(() => {
+    const headerHeight = headerRef.current?.getBoundingClientRect().height ?? 0;
+    let cumulative = headerHeight;
+    let found: number | null = null;
+    for (let i = 0; i < items.length; i++) {
+      const height = itemRefs.current[i]?.getBoundingClientRect().height ?? 0;
+      if (cumulative + height > PRINTABLE_HEIGHT_PX) {
+        found = i;
+        break;
+      }
+      cumulative += height;
+    }
+    setBreakBeforeIndex(found);
+  }, [items]);
+
+  // This view starts out `hidden` (see the wrapper below) until Preview is
+  // opened, so measuring on mount would just read every height as zero —
+  // re-measure once it's actually laid out on screen instead.
+  useEffect(() => {
+    if (previewing) measure();
+  }, [previewing, measure]);
+
+  // Printing can also be triggered without ever opening Preview (the iOS
+  // standalone-mode reopened-tab flow below), in which case this view is
+  // still `hidden` right up until the browser itself switches to print
+  // media. `beforeprint` fires once that switch has happened, so this is
+  // the first point it's safe to measure — done with flushSync so the
+  // break marker it may add is actually in the DOM before the browser
+  // paginates, not just scheduled.
+  useEffect(() => {
+    function onBeforePrint() {
+      flushSync(() => measure());
+    }
+    window.addEventListener("beforeprint", onBeforePrint);
+    return () => window.removeEventListener("beforeprint", onBeforePrint);
+  }, [measure]);
+
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="mb-3 flex items-center gap-3">
+      <div ref={headerRef} className="mb-3 flex items-center gap-3">
         {/* A plain <img>, not next/image — this only ever renders for
             print/preview, where Next's lazy-loading and layout machinery
             buy nothing and just add a reason the logo might not be ready
@@ -931,7 +1015,24 @@ function PrintView({ date, items }: { date: string; items: OosItemWithSongs[] })
       {items.length === 0 ? (
         <p className="text-xl text-text-faint italic">Nothing here yet.</p>
       ) : (
-        items.map((item, i) => <PrintItem key={item.id} item={item} index={i + 1} isEven={i % 2 === 1} />)
+        items.map((item, i) => (
+          <div
+            key={item.id}
+            ref={(el) => {
+              itemRefs.current[i] = el;
+            }}
+          >
+            {i === breakBeforeIndex && (
+              // No logo, no gradient bar — this only exists so a stray
+              // second page still reads as "still this run sheet" instead
+              // of a loose page of numbers with no context.
+              <p className="oos-print-continuation mb-3 border-b border-border pb-2 text-sm font-semibold text-text-muted">
+                Order of Service &middot; {isoToMdy(date)} &middot; continued
+              </p>
+            )}
+            <PrintItem item={item} index={i + 1} isEven={i % 2 === 1} />
+          </div>
+        ))
       )}
     </div>
   );
