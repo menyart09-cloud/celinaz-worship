@@ -276,6 +276,7 @@ export type OosItemWithSongs = {
   label: string;
   assignee: string | null;
   detail: string | null;
+  notes: string | null;
   position: number;
   songs: { linkId: string; songId: string; hymnNumber: string; title: string }[];
 };
@@ -287,6 +288,7 @@ export async function getOosItems(date: string): Promise<OosItemWithSongs[]> {
       label: oosItems.label,
       assignee: oosItems.assignee,
       detail: oosItems.detail,
+      notes: oosItems.notes,
       position: oosItems.position,
       linkId: oosItemSongs.id,
       songId: songs.id,
@@ -304,7 +306,15 @@ export async function getOosItems(date: string): Promise<OosItemWithSongs[]> {
   for (const r of rows) {
     let item = byId.get(r.id);
     if (!item) {
-      item = { id: r.id, label: r.label, assignee: r.assignee, detail: r.detail, position: r.position, songs: [] };
+      item = {
+        id: r.id,
+        label: r.label,
+        assignee: r.assignee,
+        detail: r.detail,
+        notes: r.notes,
+        position: r.position,
+        songs: [],
+      };
       byId.set(r.id, item);
     }
     if (r.linkId && r.songId && r.title) {
@@ -319,6 +329,7 @@ export type OosBackupRow = {
   label: string;
   assignee: string | null;
   detail: string | null;
+  notes: string | null;
   position: number;
   songs: { hymnNumber: string; title: string }[];
 };
@@ -331,6 +342,7 @@ export async function getAllOosItemsForBackup(): Promise<OosBackupRow[]> {
       label: oosItems.label,
       assignee: oosItems.assignee,
       detail: oosItems.detail,
+      notes: oosItems.notes,
       position: oosItems.position,
       songId: songs.id,
       hymnNumber: songs.hymnNumber,
@@ -346,7 +358,15 @@ export async function getAllOosItemsForBackup(): Promise<OosBackupRow[]> {
   for (const r of rows) {
     let item = byId.get(r.itemId);
     if (!item) {
-      item = { date: r.date, label: r.label, assignee: r.assignee, detail: r.detail, position: r.position, songs: [] };
+      item = {
+        date: r.date,
+        label: r.label,
+        assignee: r.assignee,
+        detail: r.detail,
+        notes: r.notes,
+        position: r.position,
+        songs: [],
+      };
       byId.set(r.itemId, item);
     }
     if (r.songId && r.title) {

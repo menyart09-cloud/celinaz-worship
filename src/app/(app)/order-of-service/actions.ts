@@ -83,7 +83,7 @@ export async function moveItemAction(itemId: string, direction: "up" | "down") {
 
 export async function updateItemFieldAction(
   itemId: string,
-  field: "label" | "assignee" | "detail",
+  field: "label" | "assignee" | "detail" | "notes",
   value: string,
 ) {
   const trimmed = value.trim();
@@ -183,14 +183,16 @@ export async function copyFromLastWeekAction(date: string) {
 
   await db.delete(oosItems).where(eq(oosItems.date, date));
 
-  const template = labels ?? STARTER_TEMPLATE.map((label, position) => ({ label, assignee: null, detail: null, position }));
+  const template =
+    labels ?? STARTER_TEMPLATE.map((label, position) => ({ label, assignee: null, detail: null, notes: null, position }));
   for (let i = 0; i < template.length; i++) {
-    const t = template[i] as { label: string; assignee?: string | null; detail?: string | null };
+    const t = template[i] as { label: string; assignee?: string | null; detail?: string | null; notes?: string | null };
     await db.insert(oosItems).values({
       date,
       label: t.label,
       assignee: t.assignee ?? null,
       detail: t.detail ?? null,
+      notes: t.notes ?? null,
       position: i,
     });
   }

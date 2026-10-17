@@ -30,7 +30,7 @@ export async function GET() {
     "WHAT THIS IS",
     "This spreadsheet is a full backup of everything in the Worship Set Planner as of the date above. The other two tabs are:",
     "  • Service Log — every service you've logged: date, sermon, scripture, note, and the songs sung.",
-    "  • Order of Service — every run sheet you've saved: one row per item, with its label, assignee, notes, and songs.",
+    "  • Order of Service — every run sheet you've saved: one row per item, with its label, assignee, detail, notes, and songs.",
     "",
     "IF THE APP OR ITS HOST EVER GOES DOWN FOR GOOD",
     "This file is your safety net. If celinaz-worship.vercel.app is ever lost — hosting canceled, account lost, anything like that — this spreadsheet has everything needed to start over: your full service history and song library, ready to be re-entered into a new copy of the app or read on its own.",
@@ -73,6 +73,7 @@ export async function GET() {
     { header: "Label", key: "label", width: 22 },
     { header: "Assignee", key: "assignee", width: 20 },
     { header: "Detail", key: "detail", width: 38 },
+    { header: "Notes", key: "notes", width: 32 },
     { header: "Songs", key: "songs", width: 50 },
   ];
   oosSheet.getRow(1).font = { bold: true };
@@ -82,6 +83,7 @@ export async function GET() {
       label: r.label,
       assignee: r.assignee ?? "",
       detail: r.detail ?? "",
+      notes: r.notes ?? "",
       songs: r.songs.map((sg) => `${sg.hymnNumber} - ${sg.title}`).join(" | "),
     });
   }

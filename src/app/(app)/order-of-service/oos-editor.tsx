@@ -22,7 +22,7 @@ import {
 } from "./actions";
 import { registerFlusher } from "./pending-saves";
 
-type Field = "label" | "assignee" | "detail";
+type Field = "label" | "assignee" | "detail" | "notes";
 
 function noopSubscribe() {
   return () => {};
@@ -354,6 +354,7 @@ function OosRow({
   const [label, setLabel] = useState(item.label);
   const [assignee, setAssignee] = useState(item.assignee ?? "");
   const [detail, setDetail] = useState(item.detail ?? "");
+  const [notes, setNotes] = useState(item.notes ?? "");
   const [, startTransition] = useTransition();
   const [inFlight, setInFlight] = useState(0);
   const [justSaved, setJustSaved] = useState(false);
@@ -364,7 +365,12 @@ function OosRow({
   // nothing depends on leaving the field first. Refs hold the latest text and
   // what the server last got, so flushing never reads stale state.
   const itemId = item.id;
-  const initial = { label: item.label, assignee: item.assignee ?? "", detail: item.detail ?? "" };
+  const initial = {
+    label: item.label,
+    assignee: item.assignee ?? "",
+    detail: item.detail ?? "",
+    notes: item.notes ?? "",
+  };
   const latest = useRef({ ...initial });
   const saved = useRef({ ...initial });
   const timers = useRef<Partial<Record<Field, ReturnType<typeof setTimeout>>>>({});
@@ -378,7 +384,7 @@ function OosRow({
   // write echoed back through props. Set when a save is dispatched, cleared
   // only once an incoming prop value actually matches what we sent — not
   // merely once the save's own request/response cycle finishes (see below).
-  const awaitingEcho = useRef<Record<Field, boolean>>({ label: false, assignee: false, detail: false });
+  const awaitingEcho = useRef<Record<Field, boolean>>({ label: false, assignee: false, detail: false, notes: false });
 
   const save = useCallback(
     (field: Field): Promise<void> => {
@@ -442,7 +448,7 @@ function OosRow({
   }, [save]);
 
   const flush = useCallback(async () => {
-    await Promise.all([save("label"), save("detail"), commitAssignee()]);
+    await Promise.all([save("label"), save("detail"), save("notes"), commitAssignee()]);
   }, [save, commitAssignee]);
 
   useEffect(() => {
@@ -480,6 +486,7 @@ function OosRow({
       label: item.label,
       assignee: item.assignee ?? "",
       detail: item.detail ?? "",
+      notes: item.notes ?? "",
     };
     (Object.keys(incoming) as Field[]).forEach((field) => {
       const value = incoming[field];
@@ -492,15 +499,17 @@ function OosRow({
       saved.current[field] = value;
       if (field === "label") setLabel(value);
       else if (field === "assignee") setAssignee(value);
-      else setDetail(value);
+      else if (field === "detail") setDetail(value);
+      else setNotes(value);
     });
-  }, [item.label, item.assignee, item.detail]);
+  }, [item.label, item.assignee, item.detail, item.notes]);
 
   function edit(field: Field, value: string) {
     latest.current[field] = value;
     if (field === "label") setLabel(value);
     else if (field === "assignee") setAssignee(value);
-    else setDetail(value);
+    else if (field === "detail") setDetail(value);
+    else setNotes(value);
     clearTimeout(timers.current[field]);
     timers.current[field] = setTimeout(() => void save(field), 600);
   }
@@ -642,6 +651,18 @@ function OosRow({
             <SongPickerButton itemId={item.id} library={library} />
           </span>
         </div>
+      </div>
+
+      <div className="flex w-full flex-none flex-col gap-1 md:w-48">
+        <label className="text-[0.65rem] font-semibold tracking-wide text-text-faint uppercase">Notes</label>
+        <textarea
+          value={notes}
+          onChange={(e) => edit("notes", e.target.value)}
+          onBlur={() => void save("notes")}
+          placeholder="Internal note — prints on the right…"
+          rows={2}
+          className="w-full resize-none rounded-md border border-border-strong bg-surface px-2.5 py-1.5 text-sm"
+        />
       </div>
     </div>
   );
@@ -851,9 +872,24 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
     // in jsPDF's own "helvetica", but keeping both renders visually
     // identical is the whole point.
     const numberColWidth = 30;
+    // Reserved only on rows that actually have a note, same as the print
+    // view -- a row with none runs its headline the full width instead of
+    // leaving an empty margin.
+    const notesColWidth = 130;
+    const notesGap = 16;
+    const notesFontSize = 9;
+    const notesLineHeight = notesFontSize * 1.35;
     items.forEach((item, i) => {
-      const lines = buildItemLines(doc, item, maxWidth - 16 - numberColWidth);
-      const blockHeight = lines.length * lineHeight + 10;
+      const hasNotes = !!item.notes;
+      const contentWidth = maxWidth - 16 - numberColWidth - (hasNotes ? notesColWidth + notesGap : 0);
+      const lines = buildItemLines(doc, item, contentWidth);
+      const mainBlockHeight = lines.length * lineHeight + 10;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(notesFontSize);
+      const notesLines = hasNotes ? (doc.splitTextToSize(item.notes ?? "", notesColWidth) as string[]) : [];
+      const notesBlockHeight = hasNotes ? notesLines.length * notesLineHeight + 10 : 0;
+      const blockHeight = Math.max(mainBlockHeight, notesBlockHeight);
 
       if (y + blockHeight > pageHeight - margin) {
         doc.addPage();
@@ -880,6 +916,22 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
         doc.text(line.text, margin + numberColWidth + line.indent, ly);
         ly += lineHeight;
       }
+
+      if (hasNotes) {
+        const notesX = margin + maxWidth - notesColWidth;
+        doc.setDrawColor(225, 222, 215);
+        doc.line(notesX - notesGap / 2, y - 3, notesX - notesGap / 2, y - 3 + blockHeight);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(notesFontSize);
+        doc.setTextColor(115, 108, 94);
+        let noteY = y + 9;
+        for (const nl of notesLines) {
+          doc.text(nl, notesX, noteY);
+          noteY += notesLineHeight;
+        }
+        doc.setTextColor(0, 0, 0);
+      }
+
       y += blockHeight + 4;
     });
   }
@@ -939,6 +991,14 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
           </p>
         ))}
       </div>
+      {/* Only on rows that have one, so a row with no note still runs its
+          headline the full width instead of leaving an empty margin. A
+          separate column rather than another bullet under the headline —
+          this is a cue for whoever's running sound or slides, not part of
+          the service itself, so it reads apart from it at a glance. */}
+      {item.notes && (
+        <p className="w-40 flex-none border-l border-border pl-3 text-sm text-text-muted">{item.notes}</p>
+      )}
     </div>
   );
 }

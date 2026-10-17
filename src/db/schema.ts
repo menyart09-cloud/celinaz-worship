@@ -111,6 +111,7 @@ export const oosItems = pgTable("oos_items", {
   label: text("label").notNull(),
   assignee: text("assignee"),
   detail: text("detail"),
+  notes: text("notes"),
   position: integer("position").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
