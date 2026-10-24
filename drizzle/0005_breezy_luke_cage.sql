@@ -1,0 +1,1 @@
+ALTER TABLE "oos_item_songs" ADD COLUMN "notes" text;

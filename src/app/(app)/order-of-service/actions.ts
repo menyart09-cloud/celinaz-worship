@@ -103,6 +103,17 @@ export async function addSongToItemAction(itemId: string, hymnNumber: string, ti
   revalidateOos();
 }
 
+// A note on one song specifically, not the item it's under — kept on the
+// oos_item_songs link row itself, so it travels with the song across a
+// "Move to…" without any extra bookkeeping.
+export async function updateSongNoteAction(linkId: string, value: string) {
+  await db
+    .update(oosItemSongs)
+    .set({ notes: value.trim() || null })
+    .where(eq(oosItemSongs.id, linkId));
+  revalidateOos();
+}
+
 export async function removeSongFromItemAction(linkId: string) {
   const link = await db.query.oosItemSongs.findFirst({ where: eq(oosItemSongs.id, linkId) });
   if (!link) return;

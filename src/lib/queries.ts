@@ -278,7 +278,7 @@ export type OosItemWithSongs = {
   detail: string | null;
   notes: string | null;
   position: number;
-  songs: { linkId: string; songId: string; hymnNumber: string; title: string }[];
+  songs: { linkId: string; songId: string; hymnNumber: string; title: string; notes: string | null }[];
 };
 
 export async function getOosItems(date: string): Promise<OosItemWithSongs[]> {
@@ -294,6 +294,7 @@ export async function getOosItems(date: string): Promise<OosItemWithSongs[]> {
       songId: songs.id,
       hymnNumber: songs.hymnNumber,
       title: songs.title,
+      songNotes: oosItemSongs.notes,
       songPosition: oosItemSongs.position,
     })
     .from(oosItems)
@@ -318,7 +319,13 @@ export async function getOosItems(date: string): Promise<OosItemWithSongs[]> {
       byId.set(r.id, item);
     }
     if (r.linkId && r.songId && r.title) {
-      item.songs.push({ linkId: r.linkId, songId: r.songId, hymnNumber: r.hymnNumber ?? "Comp", title: r.title });
+      item.songs.push({
+        linkId: r.linkId,
+        songId: r.songId,
+        hymnNumber: r.hymnNumber ?? "Comp",
+        title: r.title,
+        notes: r.songNotes,
+      });
     }
   }
   return [...byId.values()].sort((a, b) => a.position - b.position);
@@ -331,7 +338,7 @@ export type OosBackupRow = {
   detail: string | null;
   notes: string | null;
   position: number;
-  songs: { hymnNumber: string; title: string }[];
+  songs: { hymnNumber: string; title: string; notes: string | null }[];
 };
 
 export async function getAllOosItemsForBackup(): Promise<OosBackupRow[]> {
@@ -347,6 +354,7 @@ export async function getAllOosItemsForBackup(): Promise<OosBackupRow[]> {
       songId: songs.id,
       hymnNumber: songs.hymnNumber,
       title: songs.title,
+      songNotes: oosItemSongs.notes,
       songPosition: oosItemSongs.position,
     })
     .from(oosItems)
@@ -370,7 +378,7 @@ export async function getAllOosItemsForBackup(): Promise<OosBackupRow[]> {
       byId.set(r.itemId, item);
     }
     if (r.songId && r.title) {
-      item.songs.push({ hymnNumber: r.hymnNumber ?? "Comp", title: r.title });
+      item.songs.push({ hymnNumber: r.hymnNumber ?? "Comp", title: r.title, notes: r.songNotes });
     }
   }
   return [...byId.values()].sort((a, b) => (a.date === b.date ? a.position - b.position : a.date < b.date ? -1 : 1));

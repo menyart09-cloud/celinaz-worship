@@ -125,6 +125,7 @@ export const oosItemSongs = pgTable("oos_item_songs", {
     .notNull()
     .references(() => songs.id, { onDelete: "restrict" }),
   position: integer("position").notNull().default(0),
+  notes: text("notes"),
 });
 
 // A song removed from an Order of Service item by hand — "Pull from Service

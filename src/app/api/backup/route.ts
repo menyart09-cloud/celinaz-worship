@@ -84,7 +84,9 @@ export async function GET() {
       assignee: r.assignee ?? "",
       detail: r.detail ?? "",
       notes: r.notes ?? "",
-      songs: r.songs.map((sg) => `${sg.hymnNumber} - ${sg.title}`).join(" | "),
+      songs: r.songs
+        .map((sg) => `${sg.hymnNumber} - ${sg.title}${sg.notes ? ` [${sg.notes}]` : ""}`)
+        .join(" | "),
     });
   }
 
