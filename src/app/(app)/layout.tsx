@@ -1,17 +1,23 @@
 import Image from "next/image";
 import { Suspense } from "react";
+import { auth } from "@/auth";
 import { AppHeader } from "./_components/app-header";
 import { NavPills } from "./_components/nav-pills";
 import { SignOutButton } from "./sign-out-button";
 
-export default function AppLayout({ children }: LayoutProps<"/">) {
+export default async function AppLayout({ children }: LayoutProps<"/">) {
+  const session = await auth();
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-5 pb-10">
       <AppHeader>
         <div className="flex flex-wrap items-center gap-3">
           <Image src="/logo.png" alt="" width={32} height={32} className="rounded-full" />
           <h1 className="text-xl font-bold">Worship Set Planner</h1>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2.5">
+            {session?.user?.email && (
+              <span className="text-sm text-text-muted">{session.user.email}</span>
+            )}
             <SignOutButton />
           </div>
         </div>
