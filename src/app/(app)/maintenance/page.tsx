@@ -1,4 +1,5 @@
 import { getAllServices, getAllOosDates } from "@/lib/queries";
+import { ChangePasswordForm } from "./change-password-form";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,14 @@ export default async function MaintenancePage() {
         >
           ⬇ Download Backup
         </a>
+      </div>
+
+      <div className="mt-4 rounded-xl border border-border bg-surface p-5 shadow-sm">
+        <h3 className="text-sm font-bold">Change Password</h3>
+        <p className="mt-1 text-sm text-text-muted">
+          Change the password you sign in with. You&apos;ll need your current one.
+        </p>
+        <ChangePasswordForm />
       </div>
     </div>
   );
