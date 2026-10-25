@@ -17,14 +17,9 @@ export async function changePasswordAction(
     return { error: "You're not signed in.", success: false };
   }
 
-  const currentPassword = formData.get("currentPassword");
   const newPassword = formData.get("newPassword");
   const confirmPassword = formData.get("confirmPassword");
-  if (
-    typeof currentPassword !== "string" ||
-    typeof newPassword !== "string" ||
-    typeof confirmPassword !== "string"
-  ) {
+  if (typeof newPassword !== "string" || typeof confirmPassword !== "string") {
     return { error: "Something went wrong. Please try again.", success: false };
   }
 
@@ -35,18 +30,11 @@ export async function changePasswordAction(
     return { error: "New password and confirmation don't match.", success: false };
   }
 
-  const user = await db.query.users.findFirst({ where: eq(users.id, session.user.id) });
-  if (!user) {
-    return { error: "Something went wrong. Please try again.", success: false };
-  }
-
-  const valid = await bcrypt.compare(currentPassword, user.passwordHash);
-  if (!valid) {
-    return { error: "Current password is incorrect.", success: false };
-  }
-
+  // Being signed in at all is the proof needed here -- this exists
+  // specifically for "I don't remember my password," so it can't also
+  // require that password.
   const passwordHash = await bcrypt.hash(newPassword, 12);
-  await db.update(users).set({ passwordHash }).where(eq(users.id, user.id));
+  await db.update(users).set({ passwordHash }).where(eq(users.id, session.user.id));
 
   return { error: null, success: true };
 }

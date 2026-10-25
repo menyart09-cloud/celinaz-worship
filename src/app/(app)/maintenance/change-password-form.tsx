@@ -19,20 +19,6 @@ export function ChangePasswordForm() {
   return (
     <form ref={formRef} action={formAction} className="mt-3 flex flex-col gap-3">
       <div className="flex flex-col gap-1">
-        <label htmlFor="currentPassword" className="text-sm font-medium">
-          Current password
-        </label>
-        <input
-          id="currentPassword"
-          name="currentPassword"
-          type="password"
-          autoComplete="current-password"
-          required
-          className="rounded-md border border-border-strong bg-surface px-2.5 py-1.5 text-sm"
-        />
-      </div>
-
-      <div className="flex flex-col gap-1">
         <label htmlFor="newPassword" className="text-sm font-medium">
           New password
         </label>

@@ -33,7 +33,8 @@ export default async function MaintenancePage() {
       <div className="mt-4 rounded-xl border border-border bg-surface p-5 shadow-sm">
         <h3 className="text-sm font-bold">Change Password</h3>
         <p className="mt-1 text-sm text-text-muted">
-          Change the password you sign in with. You&apos;ll need your current one.
+          Change the password you sign in with. Being signed in here is enough — no need to
+          remember the old one.
         </p>
         <ChangePasswordForm />
       </div>
