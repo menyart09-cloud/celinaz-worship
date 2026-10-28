@@ -121,9 +121,17 @@ body {
 /* Printed paper is always white, regardless of the browser's dark/light
    setting — so both of these are fixed colors, not theme tokens, and both
    force Chrome/Safari/Firefox to print their background without the person
-   needing to turn on "Background graphics" first. */
+   needing to turn on "Background graphics" first.
+
+   The stripe is a fully neutral gray (equal R/G/B), not the app's usual
+   warm off-white surface-alt tone -- that near-white had barely any gray
+   signal to it and a faint warm tint already baked in, and home printers
+   are especially prone to a visible yellow cast at very pale, warm-leaning
+   fills (small cyan/magenta under-application reads as yellow at high
+   luminance). A plainer, slightly less pale neutral gray leaves more
+   margin before ordinary ink/toner drift shows up as an actual color. */
 .oos-print-stripe {
-  background: #f3f2ee;
+  background: #e9e9e9;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }

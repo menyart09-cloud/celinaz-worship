@@ -945,6 +945,8 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
     // print view's CSS grid for the same reason.
     const whoColWidth = 80;
     const whoGap = 14;
+    const whoFontSize = 12;
+    const whoLineHeight = whoFontSize * 1.35;
     const notesColWidth = 130;
     const notesGap = 16;
     const notesFontSize = 9;
@@ -965,9 +967,9 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
       const itemNoteHeight = itemNoteLines.length * notesLineHeight;
 
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(14);
+      doc.setFontSize(whoFontSize);
       const whoLines = item.assignee ? (doc.splitTextToSize(item.assignee, whoColWidth) as string[]) : [];
-      const whoHeight = whoLines.length * lineHeight;
+      const whoHeight = whoLines.length * whoLineHeight;
 
       const headlineBlockHeight = Math.max(headlineTextHeight, itemNoteHeight, whoHeight) + 10;
 
@@ -984,9 +986,12 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
 
       // Same stripe color as the browser print view's .oos-print-stripe --
       // fixed, not a theme token, since paper is always white regardless of
-      // the owner's screen being in dark mode.
+      // the owner's screen being in dark mode. A plain neutral gray, not
+      // the app's warm off-white, for the same reason as there: a near-
+      // white warm tint is where home printers are most likely to show an
+      // unintended yellow cast.
       if (i % 2 === 1) {
-        doc.setFillColor(243, 242, 238);
+        doc.setFillColor(233, 233, 233);
         doc.rect(margin - 6, y - 3, maxWidth + 12, totalBlockHeight, "F");
       }
 
@@ -1003,17 +1008,18 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
         ly += lineHeight;
       }
 
-      // Navy, same reasoning as the print view's assignee column: fixed
+      // Black, same reasoning as the print view's assignee column: fixed
       // regardless of dark/light, not bold since nothing else on this row
-      // is either.
+      // is either. Smaller than the headline (12pt, not 14) so it reads
+      // as its own column rather than a second headline.
       if (whoLines.length) {
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(14);
-        doc.setTextColor(10, 59, 100);
+        doc.setFontSize(whoFontSize);
+        doc.setTextColor(0, 0, 0);
         let wy = y + 12;
         for (const wl of whoLines) {
           doc.text(wl, whoX, wy);
-          wy += lineHeight;
+          wy += whoLineHeight;
         }
         doc.setTextColor(0, 0, 0);
       }
@@ -1123,9 +1129,11 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
         {/* Its own column, not folded into the headline text, so it lines
             up with every other row's and reads at a glance scanning down
             the sheet instead of requiring each line to be read in full.
-            Navy for the same "fixed regardless of dark/light" reason as
-            the number column, not bold for the same Noteworthy reason. */}
-        <p className="min-w-0 text-xl" style={{ color: "#0a3b64" }}>
+            Black, same fixed-color reasoning as the number column, not
+            bold for the same Noteworthy reason. Slightly smaller than the
+            headline (text-lg, not text-xl) so it reads as its own column
+            rather than a second headline. */}
+        <p className="min-w-0 text-lg" style={{ color: "#000000" }}>
           {item.assignee}
         </p>
         {/* Always present so the grid's column widths stay fixed whether or
