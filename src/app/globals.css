@@ -143,3 +143,32 @@ body {
   break-before: page;
   page-break-before: always;
 }
+
+/* Fixed grid columns, not flex, for every row on the printed Order of
+   Service -- number, what, who's assigned, and the notes margin. A flexed
+   "what" column stretches to fill whatever the notes column isn't using,
+   which drags the assignee column left or right depending on whether that
+   particular row happens to have a note or a song line. A grid's column
+   widths don't depend on which rows have content in them, so "who" lines
+   up in the same spot all the way down the sheet. Every row (an item's own
+   headline/detail, or one of its song lines) uses this same class so they
+   all share the same four column positions. */
+.oos-print-row {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr 9rem 10rem;
+  column-gap: 1.5rem;
+  align-items: start;
+}
+
+/* The printed page itself is always full letter-width -- this is purely
+   for the on-screen Preview when it's opened on a narrow phone, where the
+   desktop column widths above don't leave the "what" column any room at
+   all (it collapses to 0 and "who"/notes overlap it). Narrower, tighter
+   columns here, not a stacked layout, so Preview still shows the same
+   shape the printed page will actually have. */
+@media (max-width: 540px) {
+  .oos-print-row {
+    grid-template-columns: 1.1rem 1fr 4.5rem 5.5rem;
+    column-gap: 0.625rem;
+  }
+}

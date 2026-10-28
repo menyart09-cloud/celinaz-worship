@@ -810,13 +810,14 @@ function drawContinuationHeader(doc: InstanceType<typeof jsPDF>, margin: number,
 type PdfLine = { text: string; bold: boolean; indent: number };
 
 // Same branching as PrintItem (see below): a trailing colon the owner
-// already typed is stripped, "Opening Song" inlines its one song when
-// there's no assignee, and detail always gets its own bulleted line
-// regardless of which headline branch fired. Lines come back pre-wrapped
-// to the page width so the caller can measure the headline/detail block's
-// height before committing it to a page or drawing its background. Songs
-// are handled separately (buildSongEntry) since each can carry its own
-// note, independent of the headline's.
+// already typed is stripped, "Opening Song" inlines its one song, and
+// detail always gets its own bulleted line regardless of which headline
+// branch fired. Lines come back pre-wrapped to the page width so the
+// caller can measure the headline/detail block's height before committing
+// it to a page or drawing its background. Songs are handled separately
+// (buildSongEntry) since each can carry its own note, independent of the
+// headline's. Who's assigned is drawn in its own column by the caller, not
+// part of this text at all.
 function buildItemLines(
   doc: InstanceType<typeof jsPDF>,
   item: OosItemWithSongs,
@@ -824,17 +825,14 @@ function buildItemLines(
 ): { lines: PdfLine[]; listSongs: OosItemWithSongs["songs"] } {
   const label = item.label.replace(/:+\s*$/, "");
   // A song with its own note can't be folded into the headline -- there'd
-  // be nowhere left to show that note next to it.
+  // be nowhere left to show that note next to it. Whether the item has an
+  // assignee no longer matters here, since the assignee has its own column.
   const inlineSong =
-    label === "Opening Song" && !item.assignee && item.songs.length === 1 && !item.songs[0].notes
-      ? item.songs[0]
-      : null;
+    label === "Opening Song" && item.songs.length === 1 && !item.songs[0].notes ? item.songs[0] : null;
   const listSongs = inlineSong ? [] : item.songs;
 
   let headLine = label;
-  if (item.assignee) {
-    headLine += `: ${item.assignee}`;
-  } else if (inlineSong) {
+  if (inlineSong) {
     headLine += `: ${inlineSong.title} ${songTag(inlineSong.hymnNumber)}`.trimEnd();
   } else if (item.detail || listSongs.length > 0) {
     headLine += ":";
@@ -938,32 +936,44 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
     // in jsPDF's own "helvetica", but keeping both renders visually
     // identical is the whole point.
     const numberColWidth = 30;
-    // Reserved only on rows that actually have a note, same as the print
-    // view -- a row with none runs its own line the full width instead of
-    // leaving an empty margin. Shared by the item's own note (next to the
-    // headline/detail) and each song's note (next to just that song).
+    // Who's assigned and the notes margin are both fixed columns, reserved
+    // on every row whether or not that particular row has anything in
+    // them -- not conditionally reclaimed by the headline the way they
+    // used to be. A column whose position depends on that row's own
+    // content drifts left or right row to row; a genuinely fixed one is
+    // what keeps "who" lined up all the way down the sheet, matching the
+    // print view's CSS grid for the same reason.
+    const whoColWidth = 80;
+    const whoGap = 14;
     const notesColWidth = 130;
     const notesGap = 16;
     const notesFontSize = 9;
     const notesLineHeight = notesFontSize * 1.35;
     const songIndent = 16;
+    const whoX = margin + maxWidth - notesColWidth - notesGap - whoColWidth;
+    const notesX = margin + maxWidth - notesColWidth;
+    const headlineContentWidth = whoX - whoGap - (margin + numberColWidth);
+    const songTextWidth = headlineContentWidth - songIndent;
+
     items.forEach((item, i) => {
-      const hasItemNotes = !!item.notes;
-      const headlineContentWidth = maxWidth - 16 - numberColWidth - (hasItemNotes ? notesColWidth + notesGap : 0);
       const { lines, listSongs } = buildItemLines(doc, item, headlineContentWidth);
       const headlineTextHeight = lines.length * lineHeight;
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(notesFontSize);
-      const itemNoteLines = hasItemNotes ? (doc.splitTextToSize(item.notes ?? "", notesColWidth) as string[]) : [];
+      const itemNoteLines = item.notes ? (doc.splitTextToSize(item.notes, notesColWidth) as string[]) : [];
       const itemNoteHeight = itemNoteLines.length * notesLineHeight;
-      const headlineBlockHeight = Math.max(headlineTextHeight, itemNoteHeight) + 10;
 
-      const songTextWidthBase = maxWidth - numberColWidth - songIndent;
-      const songEntries = listSongs.map((s, si) => {
-        const textWidth = songTextWidthBase - (s.notes ? notesColWidth + notesGap : 0);
-        return buildSongEntry(doc, s, si, textWidth, notesColWidth, lineHeight, notesFontSize, notesLineHeight);
-      });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(14);
+      const whoLines = item.assignee ? (doc.splitTextToSize(item.assignee, whoColWidth) as string[]) : [];
+      const whoHeight = whoLines.length * lineHeight;
+
+      const headlineBlockHeight = Math.max(headlineTextHeight, itemNoteHeight, whoHeight) + 10;
+
+      const songEntries = listSongs.map((s, si) =>
+        buildSongEntry(doc, s, si, songTextWidth, notesColWidth, lineHeight, notesFontSize, notesLineHeight),
+      );
 
       const totalBlockHeight = headlineBlockHeight + songEntries.reduce((sum, e) => sum + e.blockHeight, 0);
 
@@ -993,8 +1003,22 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
         ly += lineHeight;
       }
 
-      if (hasItemNotes) {
-        const notesX = margin + maxWidth - notesColWidth;
+      // Navy, same reasoning as the print view's assignee column: fixed
+      // regardless of dark/light, not bold since nothing else on this row
+      // is either.
+      if (whoLines.length) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(14);
+        doc.setTextColor(10, 59, 100);
+        let wy = y + 12;
+        for (const wl of whoLines) {
+          doc.text(wl, whoX, wy);
+          wy += lineHeight;
+        }
+        doc.setTextColor(0, 0, 0);
+      }
+
+      if (item.notes) {
         doc.setDrawColor(225, 222, 215);
         doc.line(notesX - notesGap / 2, y - 3, notesX - notesGap / 2, y - 3 + headlineBlockHeight);
         doc.setFont("helvetica", "normal");
@@ -1010,7 +1034,9 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
 
       // Each song drawn below the headline block, in its own vertical slot
       // (songEntries[si].blockHeight) -- so a song's note sits next to just
-      // that song's line, not the item's headline above it.
+      // that song's line, not the item's headline above it. Songs have no
+      // assignee of their own, so nothing is drawn in the "who" column for
+      // these rows -- it just stays the reserved blank space it already is.
       let songY = y + headlineBlockHeight;
       listSongs.forEach((s, si) => {
         const entry = songEntries[si];
@@ -1023,7 +1049,6 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
           sly += lineHeight;
         }
         if (s.notes) {
-          const notesX = margin + maxWidth - notesColWidth;
           doc.setDrawColor(225, 222, 215);
           doc.line(notesX - notesGap / 2, songY, notesX - notesGap / 2, songY + entry.blockHeight);
           doc.setFont("helvetica", "normal");
@@ -1061,16 +1086,14 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
   // (comp)"). Every other item, "Worship" especially, always lists its
   // songs as a numbered list, even with just one. A song with its own note
   // also can't be inlined -- there'd be nowhere left to show that note.
+  // Who's assigned no longer lives on this line (see the grid below), so
+  // an item having one doesn't rule out inlining its one song anymore.
   const inlineSong =
-    label === "Opening Song" && !item.assignee && item.songs.length === 1 && !item.songs[0].notes
-      ? item.songs[0]
-      : null;
+    label === "Opening Song" && item.songs.length === 1 && !item.songs[0].notes ? item.songs[0] : null;
   const listSongs = inlineSong ? [] : item.songs;
 
   let headLine = label;
-  if (item.assignee) {
-    headLine += `: ${item.assignee}`;
-  } else if (inlineSong) {
+  if (inlineSong) {
     headLine += `: ${inlineSong.title} ${songTag(inlineSong.hymnNumber)}`;
   } else if (item.detail || listSongs.length > 0) {
     headLine += ":";
@@ -1080,7 +1103,7 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
     <div
       className={"mb-1 flex flex-col gap-0.5 rounded-md px-3 py-2 break-inside-avoid-page " + (isEven ? "oos-print-stripe" : "")}
     >
-      <div className="flex gap-6">
+      <div className="oos-print-row">
         {/* Black, not navy or text-accent: fixed either way so it reads the
             same regardless of the browser's dark/light setting, same
             reasoning as the stripe and header bar above it. Regular weight,
@@ -1090,35 +1113,41 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
             column made the numbers balloon next to the rest of the
             (unbolded) text. Color plus the wider gap before the text is
             enough to read as its own column without it. */}
-        <p className="w-6 flex-none text-right text-xl" style={{ color: "#000000" }}>
+        <p className="text-right text-xl" style={{ color: "#000000" }}>
           {index}.
         </p>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0">
           <p className="text-xl">{headLine}</p>
           {item.detail && <p className="pl-4 text-xl before:mr-1.5 before:content-['•']">{item.detail}</p>}
         </div>
-        {/* Only on rows that have one, so a row with no note still runs its
-            headline the full width instead of leaving an empty margin. A
-            separate column rather than another bullet under the headline —
-            this is a cue for whoever's running sound or slides, not part of
-            the service itself, so it reads apart from it at a glance. */}
-        {item.notes && (
-          <p className="w-40 flex-none border-l border-border pl-3 text-sm text-text-muted">{item.notes}</p>
-        )}
+        {/* Its own column, not folded into the headline text, so it lines
+            up with every other row's and reads at a glance scanning down
+            the sheet instead of requiring each line to be read in full.
+            Navy for the same "fixed regardless of dark/light" reason as
+            the number column, not bold for the same Noteworthy reason. */}
+        <p className="min-w-0 text-xl" style={{ color: "#0a3b64" }}>
+          {item.assignee}
+        </p>
+        {/* Always present so the grid's column widths stay fixed whether or
+            not THIS row has a note -- an empty cell, not an omitted one,
+            is what keeps "who" lined up row to row. The border only draws
+            when there's actually a note in it. */}
+        <p className={"text-sm text-text-muted " + (item.notes ? "border-l border-border pl-3" : "")}>
+          {item.notes}
+        </p>
       </div>
-      {/* Each song its own row, indented to align under the headline (same
-          64px the detail bullet lands at: the number column plus gap, plus
-          its own indent) -- so a song can carry its own note next to just
-          that song, separate from the item's own note next to the headline
-          above. */}
+      {/* Each song its own row, same four-column grid as the headline so
+          its text lines up under the headline's own "what" column and its
+          note (if it has one) lines up in the same notes column -- the
+          first and third cells are just left empty. */}
       {listSongs.map((s, i) => (
-        <div key={s.linkId} className="flex gap-6 pl-16">
-          <p className="min-w-0 flex-1 text-xl">
+        <div key={s.linkId} className="oos-print-row">
+          <p />
+          <p className="min-w-0 pl-4 text-xl">
             {i + 1}. {s.title} {songTag(s.hymnNumber)}
           </p>
-          {s.notes && (
-            <p className="w-40 flex-none border-l border-border pl-3 text-sm text-text-muted">{s.notes}</p>
-          )}
+          <p />
+          <p className={"text-sm text-text-muted " + (s.notes ? "border-l border-border pl-3" : "")}>{s.notes}</p>
         </div>
       ))}
     </div>
