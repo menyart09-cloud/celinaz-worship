@@ -945,7 +945,7 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
     // print view's CSS grid for the same reason.
     const whoColWidth = 80;
     const whoGap = 14;
-    const whoFontSize = 12;
+    const whoFontSize = 11;
     const whoLineHeight = whoFontSize * 1.35;
     const notesColWidth = 130;
     const notesGap = 16;
@@ -1130,10 +1130,10 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
             up with every other row's and reads at a glance scanning down
             the sheet instead of requiring each line to be read in full.
             Black, same fixed-color reasoning as the number column, not
-            bold for the same Noteworthy reason. Slightly smaller than the
-            headline (text-lg, not text-xl) so it reads as its own column
-            rather than a second headline. */}
-        <p className="min-w-0 text-lg" style={{ color: "#000000" }}>
+            bold for the same Noteworthy reason. Smaller than the headline
+            (text-base, not text-xl) so it reads as its own column rather
+            than a second headline. */}
+        <p className="min-w-0 text-base" style={{ color: "#000000" }}>
           {item.assignee}
         </p>
         {/* Always present so the grid's column widths stay fixed whether or
