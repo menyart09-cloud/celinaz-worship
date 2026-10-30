@@ -840,13 +840,13 @@ function buildItemLines(
 
   const lines: PdfLine[] = [];
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
+  doc.setFontSize(13);
   for (const l of doc.splitTextToSize(headLine, maxWidth) as string[]) {
     lines.push({ text: l, bold: true, indent: 0 });
   }
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(14);
+  doc.setFontSize(13);
   if (item.detail) {
     for (const l of doc.splitTextToSize(`• ${item.detail}`, maxWidth - 16) as string[]) {
       lines.push({ text: l, bold: false, indent: 16 });
@@ -856,13 +856,24 @@ function buildItemLines(
   return { lines, listSongs };
 }
 
-type PdfSongEntry = { lines: string[]; noteLines: string[]; blockHeight: number };
+type PdfSongEntry = {
+  numberText: string;
+  numberWidth: number;
+  titleLines: string[];
+  noteLines: string[];
+  blockHeight: number;
+};
 
 // A song's own line plus, when it has one, its own note -- measured the
 // same way the headline/detail block is (wrapped text, a note column that
 // only reserves space when present, block height the taller of the two)
 // but independent of the item's own note, since a song can have one when
-// the item doesn't and vice versa.
+// the item doesn't and vice versa. The number is measured and returned
+// separately from the title, not baked into one wrapped string -- the
+// caller draws the number once and every title line (first included) at
+// the same indent past it, a hanging indent, so a wrapped title tucks in
+// under itself instead of falling back to the number's own column, where
+// it would be easy to mistake for its own line.
 function buildSongEntry(
   doc: InstanceType<typeof jsPDF>,
   song: OosItemWithSongs["songs"][number],
@@ -874,17 +885,20 @@ function buildSongEntry(
   notesLineHeight: number,
 ): PdfSongEntry {
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(14);
-  const text = `${index + 1}. ${song.title} ${songTag(song.hymnNumber)}`.trimEnd();
-  const lines = doc.splitTextToSize(text, textWidth) as string[];
+  doc.setFontSize(13);
+  const numberText = `${index + 1}.`;
+  const numberWidth = doc.getTextWidth(numberText);
+  const titleGap = 4;
+  const titleText = `${song.title} ${songTag(song.hymnNumber)}`.trimEnd();
+  const titleLines = doc.splitTextToSize(titleText, textWidth - numberWidth - titleGap) as string[];
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(notesFontSize);
   const noteLines = song.notes ? (doc.splitTextToSize(song.notes, notesColWidth) as string[]) : [];
 
-  const textHeight = lines.length * lineHeight;
+  const textHeight = titleLines.length * lineHeight;
   const noteHeight = noteLines.length * notesLineHeight;
-  return { lines, noteLines, blockHeight: Math.max(textHeight, noteHeight) + 10 };
+  return { numberText, numberWidth, titleLines, noteLines, blockHeight: Math.max(textHeight, noteHeight) + 10 };
 }
 
 // Same content and line-by-line shape as PrintItem/PrintView (the full run
@@ -901,7 +915,7 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
   const pageHeight = doc.internal.pageSize.getHeight();
   const pageWidth = doc.internal.pageSize.getWidth();
   const maxWidth = pageWidth - margin * 2;
-  const lineHeight = 14 * 1.35;
+  const lineHeight = 13 * 1.35;
   let y = margin;
 
   const logoDataUri = await loadImageDataUri("/logo.png");
@@ -926,7 +940,7 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
 
   if (items.length === 0) {
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(14);
+    doc.setFontSize(13);
     doc.text("Nothing here yet.", margin, y);
   } else {
     // Each item's own row number, not the song lists under it (those keep
@@ -935,21 +949,24 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
     // print view -- not bold, same reasoning as there: no font-quirk risk
     // in jsPDF's own "helvetica", but keeping both renders visually
     // identical is the whole point.
-    const numberColWidth = 30;
+    const numberColWidth = 28;
     // Who's assigned and the notes margin are both fixed columns, reserved
     // on every row whether or not that particular row has anything in
     // them -- not conditionally reclaimed by the headline the way they
     // used to be. A column whose position depends on that row's own
     // content drifts left or right row to row; a genuinely fixed one is
     // what keeps "who" lined up all the way down the sheet, matching the
-    // print view's CSS grid for the same reason.
-    const whoColWidth = 80;
-    const whoGap = 14;
-    const whoFontSize = 11;
+    // print view's CSS grid for the same reason. Tighter than their first
+    // pass -- neither needs as much room as it was getting, and every
+    // point reclaimed goes straight to the headline column, which is what
+    // was actually driving most of the line-wrapping.
+    const whoColWidth = 60;
+    const whoGap = 10;
+    const whoFontSize = 10;
     const whoLineHeight = whoFontSize * 1.35;
-    const notesColWidth = 130;
-    const notesGap = 16;
-    const notesFontSize = 9;
+    const notesColWidth = 95;
+    const notesGap = 11;
+    const notesFontSize = 8;
     const notesLineHeight = notesFontSize * 1.35;
     const songIndent = 16;
     const whoX = margin + maxWidth - notesColWidth - notesGap - whoColWidth;
@@ -996,22 +1013,22 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
       }
 
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(14);
+      doc.setFontSize(13);
       doc.setTextColor(0, 0, 0);
       doc.text(`${i + 1}.`, margin + numberColWidth - 8, y + 12, { align: "right" });
 
       let ly = y + 12;
       for (const line of lines) {
         doc.setFont("helvetica", line.bold ? "bold" : "normal");
-        doc.setFontSize(14);
+        doc.setFontSize(13);
         doc.text(line.text, margin + numberColWidth + line.indent, ly);
         ly += lineHeight;
       }
 
       // Black, same reasoning as the print view's assignee column: fixed
       // regardless of dark/light, not bold since nothing else on this row
-      // is either. Smaller than the headline (12pt, not 14) so it reads
-      // as its own column rather than a second headline.
+      // is either. Smaller than the headline so it reads as its own
+      // column rather than a second headline.
       if (whoLines.length) {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(whoFontSize);
@@ -1047,11 +1064,14 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
       listSongs.forEach((s, si) => {
         const entry = songEntries[si];
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(14);
+        doc.setFontSize(13);
         doc.setTextColor(0, 0, 0);
+        const numberX = margin + numberColWidth + songIndent;
+        const titleX = numberX + entry.numberWidth + 4;
+        doc.text(entry.numberText, numberX, songY + 12);
         let sly = songY + 12;
-        for (const l of entry.lines) {
-          doc.text(l, margin + numberColWidth + songIndent, sly);
+        for (const l of entry.titleLines) {
+          doc.text(l, titleX, sly);
           sly += lineHeight;
         }
         if (s.notes) {
@@ -1119,43 +1139,50 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
             column made the numbers balloon next to the rest of the
             (unbolded) text. Color plus the wider gap before the text is
             enough to read as its own column without it. */}
-        <p className="text-right text-xl" style={{ color: "#000000" }}>
+        <p className="text-right text-lg" style={{ color: "#000000" }}>
           {index}.
         </p>
         <div className="min-w-0">
-          <p className="text-xl">{headLine}</p>
-          {item.detail && <p className="pl-4 text-xl before:mr-1.5 before:content-['•']">{item.detail}</p>}
+          <p className="text-lg">{headLine}</p>
+          {item.detail && <p className="pl-4 text-lg before:mr-1.5 before:content-['•']">{item.detail}</p>}
         </div>
         {/* Its own column, not folded into the headline text, so it lines
             up with every other row's and reads at a glance scanning down
             the sheet instead of requiring each line to be read in full.
             Black, same fixed-color reasoning as the number column, not
             bold for the same Noteworthy reason. Smaller than the headline
-            (text-base, not text-xl) so it reads as its own column rather
-            than a second headline. */}
-        <p className="min-w-0 text-base" style={{ color: "#000000" }}>
+            so it reads as its own column rather than a second headline. */}
+        <p className="min-w-0 text-[0.9375rem]" style={{ color: "#000000" }}>
           {item.assignee}
         </p>
         {/* Always present so the grid's column widths stay fixed whether or
             not THIS row has a note -- an empty cell, not an omitted one,
             is what keeps "who" lined up row to row. The border only draws
             when there's actually a note in it. */}
-        <p className={"text-sm text-text-muted " + (item.notes ? "border-l border-border pl-3" : "")}>
+        <p className={"text-xs text-text-muted " + (item.notes ? "border-l border-border pl-3" : "")}>
           {item.notes}
         </p>
       </div>
       {/* Each song its own row, same four-column grid as the headline so
           its text lines up under the headline's own "what" column and its
           note (if it has one) lines up in the same notes column -- the
-          first and third cells are just left empty. */}
+          first and third cells are just left empty. The number and title
+          are separate flex children, not one run of text, so a title that
+          wraps to a second line wraps inside its own box and tucks in
+          under the title's own start instead of falling back to the
+          number's column, where it would be easy to mistake for its own
+          line. */}
       {listSongs.map((s, i) => (
         <div key={s.linkId} className="oos-print-row">
           <p />
-          <p className="min-w-0 pl-4 text-xl">
-            {i + 1}. {s.title} {songTag(s.hymnNumber)}
+          <p className="flex min-w-0 gap-1.5 pl-4 text-lg">
+            <span className="flex-none">{i + 1}.</span>
+            <span className="min-w-0">
+              {s.title} {songTag(s.hymnNumber)}
+            </span>
           </p>
           <p />
-          <p className={"text-sm text-text-muted " + (s.notes ? "border-l border-border pl-3" : "")}>{s.notes}</p>
+          <p className={"text-xs text-text-muted " + (s.notes ? "border-l border-border pl-3" : "")}>{s.notes}</p>
         </div>
       ))}
     </div>
@@ -1220,7 +1247,11 @@ function PrintView({ date, items, previewing }: { date: string; items: OosItemWi
   }, [measure]);
 
   return (
-    <div className="mx-auto max-w-2xl">
+    // 45rem (720px), not the old 42rem/max-w-2xl -- a US Letter page's
+    // own 0.5in margins (globals.css @page) leave about 720px of actual
+    // printable width, so the old cap was giving up ~48px of real page
+    // width for no reason, forcing more wrapping than the paper needs.
+    <div className="mx-auto max-w-[45rem]">
       <div ref={headerRef} className="mb-3 flex items-center gap-3">
         {/* A plain <img>, not next/image — this only ever renders for
             print/preview, where Next's lazy-loading and layout machinery
