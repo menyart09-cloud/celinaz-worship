@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { SundayDatePicker } from "./date-picker";
+import { ServiceDatePicker } from "./date-picker";
 import { createServiceAction, type CreateServiceState } from "./actions";
 
 type SongDraft = { hymnNumber: string; title: string; verses: string };
@@ -35,7 +35,7 @@ export function AddServiceForm() {
           <label className="mb-1 block text-xs font-bold tracking-wide text-text-muted uppercase">
             Date
           </label>
-          <SundayDatePicker name="date" />
+          <ServiceDatePicker name="date" />
         </div>
         <div>
           <label htmlFor="sermon" className="mb-1 block text-xs font-bold tracking-wide text-text-muted uppercase">

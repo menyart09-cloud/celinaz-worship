@@ -5,7 +5,7 @@ import { todayIso } from "@/lib/dates";
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
-export function SundayDatePicker({
+export function ServiceDatePicker({
   name,
   defaultValue,
 }: {
@@ -70,10 +70,9 @@ export function SundayDatePicker({
         onClick={() => setOpen((o) => !o)}
         className="font-mono-tab flex w-full items-center justify-between rounded-md border border-border-strong bg-surface px-3 py-2 text-left text-sm"
       >
-        {value || "Pick a Sunday…"}
+        {value || "Pick a date…"}
         <span aria-hidden>📅</span>
       </button>
-      <p className="mt-1 text-xs text-text-faint">Only Sundays are selectable</p>
 
       {open && (
         <div
@@ -105,24 +104,19 @@ export function SundayDatePicker({
             ))}
             {cells.map((day, i) => {
               if (day === null) return <div key={i} />;
-              const dow = new Date(year, month, day).getDay();
               const iso = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-              const isSunday = dow === 0;
               return (
                 <button
                   key={i}
                   type="button"
-                  disabled={!isSunday}
                   onClick={() => pick(day)}
                   className={
                     "font-mono-tab rounded py-1 text-sm " +
-                    (!isSunday
-                      ? "cursor-default text-text-faint"
-                      : iso === value
-                        ? "bg-accent text-white"
-                        : iso === today
-                          ? "text-foreground ring-1 ring-accent"
-                          : "text-foreground hover:bg-accent-soft hover:text-accent-strong")
+                    (iso === value
+                      ? "bg-accent text-white"
+                      : iso === today
+                        ? "text-foreground ring-1 ring-accent"
+                        : "text-foreground hover:bg-accent-soft hover:text-accent-strong")
                   }
                 >
                   {day}
@@ -130,9 +124,6 @@ export function SundayDatePicker({
               );
             })}
           </div>
-          <p className="mt-2 border-t border-border pt-2 text-xs text-text-faint">
-            Services run on Sundays only
-          </p>
         </div>
       )}
     </div>
