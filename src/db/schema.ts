@@ -58,13 +58,16 @@ export const songs = pgTable(
 
 // One row per Sunday (or planned future Sunday). Scripture is its own field;
 // note covers overflow like "No church — bad weather", "Communion Sunday",
-// "A cappella this week", a guest's name, etc.
+// "A cappella this week", a guest's name, etc. personalNote is a separate,
+// private reminder to self (e.g. "Teens leading singing with Mark and
+// Kenzie") — never printed or shown on the Order of Service, unlike note.
 export const services = pgTable("services", {
   id: uuid("id").primaryKey().defaultRandom(),
   date: date("date", { mode: "string" }).notNull().unique(),
   sermon: text("sermon"),
   scripture: text("scripture"),
   note: text("note"),
+  personalNote: text("personal_note"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

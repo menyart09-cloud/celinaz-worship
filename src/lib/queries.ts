@@ -19,6 +19,7 @@ export type ServiceWithSongs = {
   sermon: string | null;
   scripture: string | null;
   note: string | null;
+  personalNote: string | null;
   songs: {
     id: string;
     linkId: string;
@@ -37,6 +38,7 @@ export async function getAllServices(): Promise<ServiceWithSongs[]> {
       sermon: services.sermon,
       scripture: services.scripture,
       note: services.note,
+      personalNote: services.personalNote,
       songLinkId: serviceSongs.id,
       songId: songs.id,
       hymnNumber: songs.hymnNumber,
@@ -54,7 +56,15 @@ export async function getAllServices(): Promise<ServiceWithSongs[]> {
   for (const r of rows) {
     let svc = byId.get(r.serviceId);
     if (!svc) {
-      svc = { id: r.serviceId, date: r.date, sermon: r.sermon, scripture: r.scripture, note: r.note, songs: [] };
+      svc = {
+        id: r.serviceId,
+        date: r.date,
+        sermon: r.sermon,
+        scripture: r.scripture,
+        note: r.note,
+        personalNote: r.personalNote,
+        songs: [],
+      };
       byId.set(r.serviceId, svc);
     }
     if (r.songId && r.title && r.songLinkId) {

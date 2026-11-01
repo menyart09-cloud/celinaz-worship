@@ -10,7 +10,7 @@ export type EditedSong = { hymnNumber: string; title: string; verses: string; de
 
 export async function updateServiceAction(
   serviceId: string,
-  data: { sermon: string; scripture: string; note: string; songs: EditedSong[] },
+  data: { sermon: string; scripture: string; note: string; personalNote: string; songs: EditedSong[] },
 ) {
   await db
     .update(services)
@@ -18,6 +18,7 @@ export async function updateServiceAction(
       sermon: data.sermon.trim() || null,
       scripture: data.scripture.trim() || null,
       note: data.note.trim() || null,
+      personalNote: data.personalNote.trim() || null,
       updatedAt: new Date(),
     })
     .where(eq(services.id, serviceId));

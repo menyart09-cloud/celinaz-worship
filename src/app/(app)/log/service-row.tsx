@@ -6,12 +6,23 @@ import { SongChip } from "../_components/song-chip";
 import { updateServiceAction, setSongDestinationAction, type EditedSong } from "./actions";
 import type { ServiceWithSongs } from "@/lib/queries";
 
+// Grows a textarea to fit whatever's typed into it instead of clipping long
+// text behind a fixed row count — a ref so it also sizes correctly the
+// instant a field opens for editing with existing long text already in it,
+// not just as the person types.
+function autoGrow(el: HTMLTextAreaElement | null) {
+  if (!el) return;
+  el.style.height = "auto";
+  el.style.height = `${el.scrollHeight}px`;
+}
+
 export function ServiceRow({ service, knownHeaders }: { service: ServiceWithSongs; knownHeaders: string[] }) {
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
   const [sermon, setSermon] = useState(service.sermon ?? "");
   const [scripture, setScripture] = useState(service.scripture ?? "");
   const [note, setNote] = useState(service.note ?? "");
+  const [personalNote, setPersonalNote] = useState(service.personalNote ?? "");
   const [songs, setSongs] = useState<EditedSong[]>(
     service.songs.map((s) => ({
       hymnNumber: s.hymnNumber,
@@ -28,6 +39,7 @@ export function ServiceRow({ service, knownHeaders }: { service: ServiceWithSong
     setSermon(service.sermon ?? "");
     setScripture(service.scripture ?? "");
     setNote(service.note ?? "");
+    setPersonalNote(service.personalNote ?? "");
     setSongs(
       service.songs.map((s) => ({
         hymnNumber: s.hymnNumber,
@@ -41,7 +53,7 @@ export function ServiceRow({ service, knownHeaders }: { service: ServiceWithSong
 
   function save() {
     startTransition(async () => {
-      await updateServiceAction(service.id, { sermon, scripture, note, songs });
+      await updateServiceAction(service.id, { sermon, scripture, note, personalNote, songs });
       setEditing(false);
     });
   }
@@ -67,11 +79,11 @@ export function ServiceRow({ service, knownHeaders }: { service: ServiceWithSong
   return (
     <div
       className={
-        "flex flex-col border-t border-border first:border-t-0 md:grid md:grid-cols-[100px_minmax(0,1.15fr)_minmax(0,1.5fr)] " +
+        "flex flex-col border-t border-border first:border-t-0 md:grid md:grid-cols-[180px_100px_minmax(0,1.15fr)_minmax(0,1.5fr)] " +
         (editing ? "bg-accent-soft" : isNoSongsNote ? "bg-warn-soft" : "")
       }
     >
-      <div className="flex flex-row items-center gap-2 p-3 md:flex-col md:items-start md:gap-1.5">
+      <div className="flex flex-row items-center gap-2 p-3 md:border-l md:border-border md:flex-col md:items-start md:gap-1.5">
         <span className="font-mono-tab font-semibold whitespace-nowrap text-accent-strong">
           {isoToMdy(service.date)}
         </span>
@@ -90,26 +102,66 @@ export function ServiceRow({ service, knownHeaders }: { service: ServiceWithSong
         </button>
       </div>
 
+      <div
+        className={
+          "p-3 md:order-first " + (!editing && !service.personalNote ? "hidden md:block" : "")
+        }
+      >
+        {editing ? (
+          <textarea
+            ref={autoGrow}
+            value={personalNote}
+            onChange={(e) => {
+              setPersonalNote(e.target.value);
+              autoGrow(e.target);
+            }}
+            placeholder="Personal reminder (not shown in Order of Service)"
+            rows={2}
+            className="w-full resize-y rounded-md border border-border-strong bg-surface px-2 py-1 text-sm"
+          />
+        ) : service.personalNote ? (
+          <div className="flex items-start gap-1.5 text-sm text-accent-strong">
+            <span className="flex-none opacity-80">📌</span>
+            <span className="min-w-0">{service.personalNote}</span>
+          </div>
+        ) : null}
+      </div>
+
       <div className="p-3 md:border-l md:border-border">
         {editing ? (
           <div className="flex flex-col gap-1.5">
-            <input
+            <textarea
+              ref={autoGrow}
               value={sermon}
-              onChange={(e) => setSermon(e.target.value)}
+              onChange={(e) => {
+                setSermon(e.target.value);
+                autoGrow(e.target);
+              }}
               placeholder="Sermon title"
-              className="rounded-md border border-border-strong bg-surface px-2 py-1 text-sm"
+              rows={1}
+              className="resize-y rounded-md border border-border-strong bg-surface px-2 py-1 text-sm"
             />
-            <input
+            <textarea
+              ref={autoGrow}
               value={scripture}
-              onChange={(e) => setScripture(e.target.value)}
+              onChange={(e) => {
+                setScripture(e.target.value);
+                autoGrow(e.target);
+              }}
               placeholder="Scripture (e.g. Luke 9:23-26)"
-              className="font-mono-tab rounded-md border border-border-strong bg-surface px-2 py-1 text-sm"
+              rows={1}
+              className="font-mono-tab resize-y rounded-md border border-border-strong bg-surface px-2 py-1 text-sm"
             />
-            <input
+            <textarea
+              ref={autoGrow}
               value={note}
-              onChange={(e) => setNote(e.target.value)}
+              onChange={(e) => {
+                setNote(e.target.value);
+                autoGrow(e.target);
+              }}
               placeholder="Note (a cappella, no church, guest…)"
-              className="rounded-md border border-border-strong bg-surface px-2 py-1 text-sm"
+              rows={1}
+              className="resize-y rounded-md border border-border-strong bg-surface px-2 py-1 text-sm"
             />
           </div>
         ) : (

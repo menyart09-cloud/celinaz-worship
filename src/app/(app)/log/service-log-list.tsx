@@ -35,13 +35,14 @@ export function ServiceLogList({
       </button>
 
       <div
-        className="sticky z-20 hidden grid-cols-[100px_minmax(0,1.15fr)_minmax(0,1.5fr)] rounded-t-lg border border-border bg-surface-sunk text-xs font-bold tracking-wide text-text-muted uppercase md:grid"
+        className="sticky z-20 hidden grid-cols-[180px_100px_minmax(0,1.15fr)_minmax(0,1.5fr)] rounded-t-lg border border-border bg-surface-sunk text-xs font-bold tracking-wide text-text-muted uppercase md:grid"
         style={{ top: "var(--app-header-height, 92px)" }}
       >
+        <div className="p-2.5">My notes</div>
         <button
           type="button"
           onClick={() => setSortDir((d) => (d === 1 ? -1 : 1))}
-          className="flex items-center gap-1 p-2.5 text-left hover:bg-surface-alt"
+          className="flex items-center gap-1 border-l border-border p-2.5 text-left hover:bg-surface-alt"
         >
           Date
           <span className={sortDir === 1 ? "text-accent" : "text-accent rotate-180"}>▲</span>
