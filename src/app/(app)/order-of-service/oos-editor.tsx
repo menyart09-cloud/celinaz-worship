@@ -966,7 +966,7 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
     const whoLineHeight = whoFontSize * 1.35;
     const notesColWidth = 95;
     const notesGap = 11;
-    const notesFontSize = 8;
+    const notesFontSize = 10;
     const notesLineHeight = notesFontSize * 1.35;
     const songIndent = 16;
     const whoX = margin + maxWidth - notesColWidth - notesGap - whoColWidth;
@@ -1159,7 +1159,7 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
             not THIS row has a note -- an empty cell, not an omitted one,
             is what keeps "who" lined up row to row. The border only draws
             when there's actually a note in it. */}
-        <p className={"text-xs text-text-muted " + (item.notes ? "border-l border-border pl-3" : "")}>
+        <p className={"text-base text-text-muted " + (item.notes ? "border-l border-border pl-3" : "")}>
           {item.notes}
         </p>
       </div>
@@ -1182,7 +1182,7 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
             </span>
           </p>
           <p />
-          <p className={"text-xs text-text-muted " + (s.notes ? "border-l border-border pl-3" : "")}>{s.notes}</p>
+          <p className={"text-base text-text-muted " + (s.notes ? "border-l border-border pl-3" : "")}>{s.notes}</p>
         </div>
       ))}
     </div>
