@@ -44,24 +44,30 @@ export function NavPills() {
   const oosDate = currentDate ?? lastKnownDate;
   const oosHref = oosDate ? `/order-of-service?date=${oosDate}` : "/order-of-service";
 
-  const TABS = [
-    { href: oosHref, label: "Order of Service", match: "/order-of-service" },
-    { href: "/log", label: "Service Log", match: "/log" },
-    { href: "/add-service", label: "Add Service", match: "/add-service" },
-    { href: "/search", label: "Search", match: "/search" },
-    { href: "/songs", label: "Song Library", match: "/songs" },
-    { href: "/shortlist", label: "Shortlist", match: "/shortlist" },
-    { href: "/choruses", label: "Choruses", match: "/choruses" },
-    { href: "/scriptures", label: "Scriptures", match: "/scriptures" },
-    { href: "/maintenance", label: "Maintenance", match: "/maintenance" },
-  ];
+  // The sound booth side only has one view today, so it gets this same pill
+  // row rather than its own separate nav chrome — "exact" keeps it from
+  // reading as active while on /schedule/manage, which isn't this pill.
+  const onSchedule = pathname.startsWith("/schedule");
+  const TABS = onSchedule
+    ? [{ href: "/schedule", label: "Sound Booth", match: "/schedule", exact: true }]
+    : [
+        { href: oosHref, label: "Order of Service", match: "/order-of-service", exact: false },
+        { href: "/log", label: "Service Log", match: "/log", exact: false },
+        { href: "/add-service", label: "Add Service", match: "/add-service", exact: false },
+        { href: "/search", label: "Search", match: "/search", exact: false },
+        { href: "/songs", label: "Song Library", match: "/songs", exact: false },
+        { href: "/shortlist", label: "Shortlist", match: "/shortlist", exact: false },
+        { href: "/choruses", label: "Choruses", match: "/choruses", exact: false },
+        { href: "/scriptures", label: "Scriptures", match: "/scriptures", exact: false },
+        { href: "/maintenance", label: "Maintenance", match: "/maintenance", exact: false },
+      ];
 
   return (
     <>
       {/* Desktop: unchanged pill row. Never shown below md. */}
       <nav className="hidden flex-wrap gap-2 md:flex">
         {TABS.map((tab) => {
-          const active = pathname === tab.match || pathname.startsWith(`${tab.match}/`);
+          const active = tab.exact ? pathname === tab.match : pathname === tab.match || pathname.startsWith(`${tab.match}/`);
           return (
             <Link
               key={tab.match}
@@ -121,7 +127,7 @@ export function NavPills() {
             </div>
             <div className="flex-1 overflow-y-auto py-1">
               {TABS.map((tab) => {
-                const active = pathname === tab.match || pathname.startsWith(`${tab.match}/`);
+                const active = tab.exact ? pathname === tab.match : pathname === tab.match || pathname.startsWith(`${tab.match}/`);
                 return (
                   <Link
                     key={tab.match}

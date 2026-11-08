@@ -18,6 +18,8 @@
   --good-soft: #e5f0e6;
   --warn: #a3752b;
   --warn-soft: #f6eee1;
+  --declined: #d6392e;
+  --declined-soft: #f5e7e3;
 }
 
 @theme inline {
@@ -38,6 +40,8 @@
   --color-good-soft: var(--good-soft);
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
+  --color-declined: var(--declined);
+  --color-declined-soft: var(--declined-soft);
   --font-sans: var(--font-comic-neue);
   --font-mono: var(--font-plex-mono);
 }
@@ -61,6 +65,8 @@
     --good-soft: #203023;
     --warn: #d9b06b;
     --warn-soft: #332a18;
+    --declined: #f87171;
+    --declined-soft: #3a2420;
   }
 }
 

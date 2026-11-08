@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { auth } from "@/auth";
 import { AppHeader } from "./_components/app-header";
 import { NavPills } from "./_components/nav-pills";
+import { TopSwitch } from "./_components/top-switch";
 import { SignOutButton } from "./sign-out-button";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
@@ -13,7 +14,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       <AppHeader>
         <div className="flex flex-wrap items-center gap-3">
           <Image src="/logo.png" alt="" width={32} height={32} className="rounded-full" />
-          <h1 className="text-xl font-bold">Worship Set Planner</h1>
+          <h1 className="text-xl font-bold">Worship Planner</h1>
           <div className="ml-auto flex items-center gap-2.5">
             {session?.user?.email && (
               <span className="text-sm text-text-muted">{session.user.email}</span>
@@ -21,6 +22,9 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             <SignOutButton />
           </div>
         </div>
+        <Suspense fallback={null}>
+          <TopSwitch />
+        </Suspense>
         <Suspense fallback={null}>
           <NavPills />
         </Suspense>
