@@ -1046,7 +1046,12 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
         doc.line(notesX - notesGap / 2, y - 3, notesX - notesGap / 2, y - 3 + headlineBlockHeight);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(notesFontSize);
-        doc.setTextColor(115, 108, 94);
+        // Black, not the muted gray (115, 108, 94) this used to be — that
+        // warm mid-gray prints noticeably lighter on paper than it renders
+        // on screen, which is what actually made these notes hard to
+        // read; the smaller font size already carries the visual
+        // hierarchy without needing a lighter color too.
+        doc.setTextColor(0, 0, 0);
         let noteY = y + 9;
         for (const nl of itemNoteLines) {
           doc.text(nl, notesX, noteY);
@@ -1079,7 +1084,7 @@ async function buildOrderOfServicePdf(date: string, items: OosItemWithSongs[]): 
           doc.line(notesX - notesGap / 2, songY, notesX - notesGap / 2, songY + entry.blockHeight);
           doc.setFont("helvetica", "normal");
           doc.setFontSize(notesFontSize);
-          doc.setTextColor(115, 108, 94);
+          doc.setTextColor(0, 0, 0);
           let noteY = songY + 9;
           for (const nl of entry.noteLines) {
             doc.text(nl, notesX, noteY);
@@ -1158,8 +1163,16 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
         {/* Always present so the grid's column widths stay fixed whether or
             not THIS row has a note -- an empty cell, not an omitted one,
             is what keeps "who" lined up row to row. The border only draws
-            when there's actually a note in it. */}
-        <p className={"text-base text-text-muted " + (item.notes ? "border-l border-border pl-3" : "")}>
+            when there's actually a note in it. Fixed black, same reasoning
+            as the assignee column: text-text-muted is a warm mid-gray that
+            most home printers render noticeably lighter than it looks on
+            screen, which is what actually made these notes hard to read
+            on paper -- smaller size (text-base vs. text-lg) carries the
+            visual hierarchy instead of a lighter color. */}
+        <p
+          className={"text-base " + (item.notes ? "border-l border-border pl-3" : "")}
+          style={{ color: "#000000" }}
+        >
           {item.notes}
         </p>
       </div>
@@ -1182,7 +1195,9 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
             </span>
           </p>
           <p />
-          <p className={"text-base text-text-muted " + (s.notes ? "border-l border-border pl-3" : "")}>{s.notes}</p>
+          <p className={"text-base " + (s.notes ? "border-l border-border pl-3" : "")} style={{ color: "#000000" }}>
+            {s.notes}
+          </p>
         </div>
       ))}
     </div>

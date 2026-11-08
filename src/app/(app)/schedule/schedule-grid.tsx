@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { allUnavailable, type SoundBoothDateRow, type SoundBoothRosterRow } from "@/lib/sound-booth/helpers";
 import { assignSoundBoothPositionAction, addSoundBoothDateAction } from "@/lib/sound-booth/actions";
 import type { SoundBoothPosition, SoundBoothStatus } from "@/db/schema";
+import { DatePickerDropdown } from "./date-picker-dropdown";
 
 const POSITIONS: SoundBoothPosition[] = ["MediaShout", "Sound", "Live"];
 
@@ -13,19 +15,23 @@ function statusDotClass(status: SoundBoothStatus) {
   return "bg-text-faint";
 }
 
-type OpenPopover = { dateId: string; position: SoundBoothPosition } | null;
+type OpenPopover = { dateId: string; position: SoundBoothPosition; top: number; left: number } | null;
 
 function ReassignPopover({
   dateId,
   position,
   away,
   roster,
+  top,
+  left,
   onClose,
 }: {
   dateId: string;
   position: SoundBoothPosition;
   away: Set<string>;
   roster: SoundBoothRosterRow[];
+  top: number;
+  left: number;
   onClose: () => void;
 }) {
   const [pending, startTransition] = useTransition();
@@ -44,10 +50,16 @@ function ReassignPopover({
     assign(name);
   }
 
-  return (
+  // Rendered through a portal straight onto the body, positioned in
+  // viewport coordinates — the grid's horizontal-scroll wrapper forces its
+  // own overflow-y to clip too (an unavoidable CSS rule once overflow-x is
+  // anything but visible), so a popover nested inside it gets cut off
+  // whenever it would extend past that row, which is most rows.
+  return createPortal(
     <div
       data-sb-popover
-      className="absolute top-full left-0 z-10 mt-0.5 flex w-[230px] flex-col gap-1.5 rounded-xl border border-border-strong bg-surface p-1.5 shadow-lg"
+      style={{ position: "fixed", top, left }}
+      className="z-50 flex w-[230px] flex-col gap-1.5 rounded-xl border border-border-strong bg-surface p-1.5 shadow-lg"
     >
       <div className="flex flex-wrap gap-1.5">
         {roster.map((r) => (
@@ -99,7 +111,8 @@ function ReassignPopover({
           Add
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -107,6 +120,8 @@ export function ScheduleGrid({ dates, roster }: { dates: SoundBoothDateRow[]; ro
   const [openPopover, setOpenPopover] = useState<OpenPopover>(null);
   const [newDate, setNewDate] = useState("");
   const [addPending, startAddTransition] = useTransition();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (!openPopover) return;
     function onClick(e: MouseEvent) {
@@ -117,11 +132,38 @@ export function ScheduleGrid({ dates, roster }: { dates: SoundBoothDateRow[]; ro
     return () => document.removeEventListener("click", onClick);
   }, [openPopover]);
 
-  function addDate() {
-    const value = newDate.trim();
-    if (!value) return;
+  useEffect(() => {
+    if (!openPopover) return;
+    // The trigger's position in the viewport changes as soon as the grid is
+    // scrolled (horizontally) or the page is scrolled (vertically) — rather
+    // than tracking and repositioning, just close it, same as clicking away.
+    function onScroll() {
+      setOpenPopover(null);
+    }
+    const scrollEl = scrollRef.current;
+    scrollEl?.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, true);
+    return () => {
+      scrollEl?.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scroll", onScroll, true);
+    };
+  }, [openPopover]);
+
+  function openPopoverAt(e: React.MouseEvent<HTMLButtonElement>, dateId: string, position: SoundBoothPosition) {
+    if (openPopover?.dateId === dateId && openPopover.position === position) {
+      setOpenPopover(null);
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const popoverWidth = 230;
+    const left = Math.min(rect.left, window.innerWidth - popoverWidth - 16);
+    setOpenPopover({ dateId, position, top: rect.bottom + 4, left: Math.max(8, left) });
+  }
+
+  function addDate(iso: string) {
+    if (!iso) return;
     startAddTransition(async () => {
-      await addSoundBoothDateAction(value);
+      await addSoundBoothDateAction(iso);
       setNewDate("");
     });
   }
@@ -143,7 +185,7 @@ export function ScheduleGrid({ dates, roster }: { dates: SoundBoothDateRow[]; ro
         </span>
       </div>
 
-      <div className="overflow-x-auto rounded-xl">
+      <div ref={scrollRef} className="overflow-x-auto rounded-xl">
         <div className="w-fit rounded-xl border border-border bg-surface">
           <div
             className="grid rounded-t-xl border-b border-border bg-surface-alt text-xs font-bold tracking-wide text-text-muted uppercase"
@@ -158,7 +200,6 @@ export function ScheduleGrid({ dates, roster }: { dates: SoundBoothDateRow[]; ro
 
           {dates.map((d) => {
             const away = allUnavailable(d);
-            const awayNames = new Set(away.map((a) => a.name));
             return (
               <div
                 key={d.id}
@@ -168,14 +209,13 @@ export function ScheduleGrid({ dates, roster }: { dates: SoundBoothDateRow[]; ro
                 <div className="flex items-center px-3.5 py-2.5 font-mono-tab font-bold text-accent-strong">{d.mdy}</div>
                 {POSITIONS.map((pos) => {
                   const row = d.rows.find((r) => r.position === pos)!;
-                  const isOpen = openPopover?.dateId === d.id && openPopover.position === pos;
                   return (
                     <div key={pos} className="relative border-l border-border px-2.5 py-2.5">
                       {row.name ? (
                         <button
                           type="button"
                           data-sb-trigger
-                          onClick={() => setOpenPopover(isOpen ? null : { dateId: d.id, position: pos })}
+                          onClick={(e) => openPopoverAt(e, d.id, pos)}
                           className="-mx-1.5 -my-0.5 flex w-[calc(100%+12px)] items-center justify-between gap-2 rounded-md px-1.5 py-0.5 hover:bg-accent-soft"
                         >
                           <span className="min-w-0 truncate text-[0.92rem]">{row.name}</span>
@@ -185,7 +225,7 @@ export function ScheduleGrid({ dates, roster }: { dates: SoundBoothDateRow[]; ro
                         <button
                           type="button"
                           data-sb-trigger
-                          onClick={() => setOpenPopover(isOpen ? null : { dateId: d.id, position: pos })}
+                          onClick={(e) => openPopoverAt(e, d.id, pos)}
                           className={
                             "-mx-1.5 -my-0.5 block w-[calc(100%+12px)] rounded-md px-1.5 py-0.5 text-left font-sans text-[0.82rem] italic text-text-faint hover:bg-accent-soft " +
                             (d.hasServiceLog ? "bg-declined-soft" : "")
@@ -193,15 +233,6 @@ export function ScheduleGrid({ dates, roster }: { dates: SoundBoothDateRow[]; ro
                         >
                           + assign
                         </button>
-                      )}
-                      {isOpen && (
-                        <ReassignPopover
-                          dateId={d.id}
-                          position={pos}
-                          away={awayNames}
-                          roster={roster}
-                          onClose={() => setOpenPopover(null)}
-                        />
                       )}
                     </div>
                   );
@@ -230,25 +261,31 @@ export function ScheduleGrid({ dates, roster }: { dates: SoundBoothDateRow[]; ro
         </div>
       </div>
 
-      <div className="mt-3.5 flex max-w-[360px] gap-2">
-        <input
-          type="text"
-          value={newDate}
-          onChange={(e) => setNewDate(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              addDate();
-            }
-          }}
-          placeholder="e.g. 12-20-26"
-          className="min-w-0 flex-1 rounded-lg border border-border-strong bg-surface px-2.5 py-1.5 font-mono-tab text-sm text-foreground"
-        />
+      {openPopover &&
+        (() => {
+          const d = dates.find((x) => x.id === openPopover.dateId);
+          if (!d) return null;
+          const away = allUnavailable(d);
+          return (
+            <ReassignPopover
+              dateId={openPopover.dateId}
+              position={openPopover.position}
+              away={new Set(away.map((a) => a.name))}
+              roster={roster}
+              top={openPopover.top}
+              left={openPopover.left}
+              onClose={() => setOpenPopover(null)}
+            />
+          );
+        })()}
+
+      <div className="mt-3.5 flex max-w-[360px] items-center gap-2">
+        <DatePickerDropdown value={newDate} onChange={setNewDate} />
         <button
           type="button"
-          disabled={addPending}
-          onClick={addDate}
-          className="flex-none rounded-full border border-accent-strong bg-accent-strong px-3.5 py-1.5 text-sm font-semibold text-white"
+          disabled={addPending || !newDate}
+          onClick={() => addDate(newDate)}
+          className="flex-none rounded-full border border-accent-strong bg-accent-strong px-3.5 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
         >
           + Add a date
         </button>

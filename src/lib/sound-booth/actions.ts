@@ -13,7 +13,6 @@ import {
   type SoundBoothStatus,
   type SoundBoothAvailabilityKind,
 } from "@/db/schema";
-import { mdyToIso } from "@/lib/dates";
 import { getTeamSession, setTeamSession, clearTeamSession } from "./team-session";
 
 const POSITIONS: SoundBoothPosition[] = ["MediaShout", "Sound", "Live"];
@@ -35,8 +34,8 @@ async function upsertRosterByName(name: string): Promise<string> {
   return row.id;
 }
 
-export async function addSoundBoothDateAction(mdy: string) {
-  const date = mdyToIso(mdy.trim());
+export async function addSoundBoothDateAction(iso: string) {
+  const date = iso.trim();
   const [row] = await db.insert(soundBoothDates).values({ date }).onConflictDoNothing().returning();
   const dateId = row?.id ?? (await db.select().from(soundBoothDates).where(eq(soundBoothDates.date, date)))[0]?.id;
   if (dateId) {
