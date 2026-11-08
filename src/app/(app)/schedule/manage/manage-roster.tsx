@@ -40,6 +40,19 @@ function RosterRow({ member, knownPin, onPinSaved }: { member: SoundBoothRosterR
   const message = knownPin ? buildMessage(member.name, knownPin) : null;
   const canText = !!message && !!phoneInput.trim();
 
+  // iOS and Android disagree on the separator before `body` in an sms:
+  // link (`&` vs `?`) — getting it wrong means the body is silently
+  // dropped on one platform, so this has to branch on the device rather
+  // than picking one.
+  function textIt() {
+    if (!message) return;
+    const digits = phoneInput.trim().replace(/[^\d+]/g, "");
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const separator = isIOS ? "&" : "?";
+    window.location.href = `sms:${digits}${separator}body=${encodeURIComponent(message)}`;
+    setSent(true);
+  }
+
   async function copyMessage() {
     if (!message) return;
     try {
@@ -104,7 +117,7 @@ function RosterRow({ member, knownPin, onPinSaved }: { member: SoundBoothRosterR
             <button
               type="button"
               disabled={!canText}
-              onClick={() => setSent(true)}
+              onClick={textIt}
               className="rounded-full border border-accent-strong bg-accent-strong px-3.5 py-1.5 text-sm font-bold text-white disabled:opacity-40"
             >
               Text it to {member.name}
