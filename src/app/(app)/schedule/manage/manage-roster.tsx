@@ -11,7 +11,7 @@ import { addSoundBoothRosterMemberAction, setSoundBoothPhoneAction, setSoundBoot
 type KnownPins = Record<string, string>;
 
 function buildMessage(name: string, pin: string) {
-  return `Hey ${name} — go to https://celinaz-worship.app/team and sign in as ${name}, PIN ${pin}.`;
+  return `Hey ${name} — go to https://celinaz-worship.vercel.app/team and sign in as ${name}, PIN ${pin}.`;
 }
 
 function RosterRow({ member, knownPin, onPinSaved }: { member: SoundBoothRosterRow; knownPin: string | undefined; onPinSaved: (pin: string) => void }) {
