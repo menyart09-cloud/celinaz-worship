@@ -154,3 +154,74 @@ export const assigneeNames = pgTable("assignee_names", {
   name: text("name").notNull().unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// ---------------------------------------------------------------------------
+// Sound Booth scheduling — a separate, limited-access side of the app for
+// the sound booth team. Deliberately decoupled from `users`/next-auth: a
+// roster member signs in with a PIN the owner sets, never a real account,
+// so this whole feature can't affect how the owner or other leaders log in.
+// ---------------------------------------------------------------------------
+
+export const soundBoothPositionEnum = pgEnum("sound_booth_position", ["MediaShout", "Sound", "Live"]);
+export type SoundBoothPosition = (typeof soundBoothPositionEnum.enumValues)[number];
+
+export const soundBoothStatusEnum = pgEnum("sound_booth_status", ["pending", "yes", "no"]);
+export type SoundBoothStatus = (typeof soundBoothStatusEnum.enumValues)[number];
+
+export const soundBoothAvailabilityKindEnum = pgEnum("sound_booth_availability_kind", ["available", "unavailable"]);
+export type SoundBoothAvailabilityKind = (typeof soundBoothAvailabilityKindEnum.enumValues)[number];
+
+// One row per team member. pinHash is bcrypt, same as users.passwordHash —
+// the PIN itself is the owner's choice (often a birthday), but it's still
+// hashed at rest rather than stored plain.
+export const soundBoothRoster = pgTable("sound_booth_roster", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull().unique(),
+  pinHash: text("pin_hash"),
+  phone: text("phone"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// A date the sound booth is being scheduled for. Whether it's short-staffed
+// is judged against whether `services` has a row for this same date — not
+// stored here — so a date scheduled ahead of the Service Log never reads as
+// a real gap.
+export const soundBoothDates = pgTable("sound_booth_dates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  date: date("date", { mode: "string" }).notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const soundBoothAssignments = pgTable(
+  "sound_booth_assignments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    dateId: uuid("date_id")
+      .notNull()
+      .references(() => soundBoothDates.id, { onDelete: "cascade" }),
+    position: soundBoothPositionEnum("position").notNull(),
+    rosterId: uuid("roster_id").references(() => soundBoothRoster.id, { onDelete: "set null" }),
+    status: soundBoothStatusEnum("status").notNull().default("pending"),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("sound_booth_assignments_date_position_unique").on(t.dateId, t.position)],
+);
+
+// A person's date-level self-report ("I can help" / "I'm unavailable"),
+// separate from any one position's yes/no. At most one row per person per
+// date — picking the other kind replaces this row rather than adding one.
+export const soundBoothAvailability = pgTable(
+  "sound_booth_availability",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    dateId: uuid("date_id")
+      .notNull()
+      .references(() => soundBoothDates.id, { onDelete: "cascade" }),
+    rosterId: uuid("roster_id")
+      .notNull()
+      .references(() => soundBoothRoster.id, { onDelete: "cascade" }),
+    kind: soundBoothAvailabilityKindEnum("kind").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("sound_booth_availability_date_roster_unique").on(t.dateId, t.rosterId)],
+);
