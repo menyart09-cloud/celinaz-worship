@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { and, eq, gte, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { oosItems, oosItemSongs, oosItemExcludedSongs, assigneeNames } from "@/db/schema";
+import { oosItems, oosItemSongs, oosItemExcludedSongs, assigneeNames, oosVisibleDates } from "@/db/schema";
 import { upsertSong } from "@/lib/mutations";
 import { getOosItems, findLastOosDateBefore, getServiceByDate, type OosItemWithSongs } from "@/lib/queries";
 import { normalizeLabel } from "@/lib/labels";
@@ -25,6 +25,19 @@ const STARTER_TEMPLATE = [
 
 function revalidateOos() {
   revalidatePath("/order-of-service");
+}
+
+// Nothing is shared with the team until this is flipped on, and flipping
+// it off again pulls it straight back — there's no intermediate "shared
+// but stale" state to worry about.
+export async function setOosVisibleToTeamAction(date: string, visible: boolean) {
+  if (visible) {
+    await db.insert(oosVisibleDates).values({ date }).onConflictDoNothing();
+  } else {
+    await db.delete(oosVisibleDates).where(eq(oosVisibleDates.date, date));
+  }
+  revalidatePath("/order-of-service");
+  revalidatePath("/team/order-of-service");
 }
 
 // Inserts a new blank item right after `afterItemId` (or at the very top when

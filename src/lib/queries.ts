@@ -9,6 +9,7 @@ import {
   assigneeNames,
   oosItems,
   oosItemSongs,
+  oosVisibleDates,
 } from "@/db/schema";
 import { monthsAgoIso, todayIso } from "./dates";
 import { normalizeLabel } from "./labels";
@@ -432,6 +433,16 @@ export async function findLastOosDateBefore(date: string): Promise<string | null
     .orderBy(desc(oosItems.date))
     .limit(1);
   return rows[0]?.date ?? null;
+}
+
+export async function getOosVisibleDatesSet(): Promise<Set<string>> {
+  const rows = await db.select({ date: oosVisibleDates.date }).from(oosVisibleDates);
+  return new Set(rows.map((r) => r.date));
+}
+
+export async function isOosDateVisibleToTeam(date: string): Promise<boolean> {
+  const rows = await db.select().from(oosVisibleDates).where(eq(oosVisibleDates.date, date));
+  return rows.length > 0;
 }
 
 export async function searchByHymn(hymnNumber: string) {

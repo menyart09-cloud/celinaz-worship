@@ -155,6 +155,15 @@ export const assigneeNames = pgTable("assignee_names", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// A date's Order of Service is visible to the team (Sound Booth today,
+// Praise Team later) only once a row exists here — nothing is shared by
+// default, and a date is removed from this table rather than ever storing
+// a "false" row, so "visible" is just "has a row," not a flag to check.
+export const oosVisibleDates = pgTable("oos_visible_dates", {
+  date: date("date", { mode: "string" }).primaryKey(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ---------------------------------------------------------------------------
 // Sound Booth scheduling — a separate, limited-access side of the app for
 // the sound booth team. Deliberately decoupled from `users`/next-auth: a

@@ -5,6 +5,7 @@ import {
   getAssigneeNames,
   getSongLibrary,
   getServiceByDate,
+  isOosDateVisibleToTeam,
 } from "@/lib/queries";
 import { todayIso } from "@/lib/dates";
 import { OosEditor } from "./oos-editor";
@@ -27,11 +28,12 @@ export default async function OrderOfServicePage({
   const { date: dateParam } = await searchParams;
   const date = dateParam ?? (await resolveDefaultDate());
 
-  const [items, assigneeNames, library, service] = await Promise.all([
+  const [items, assigneeNames, library, service, visibleToTeam] = await Promise.all([
     getOosItems(date),
     getAssigneeNames(),
     getSongLibrary(),
     getServiceByDate(date),
+    isOosDateVisibleToTeam(date),
   ]);
 
   return (
@@ -61,6 +63,7 @@ export default async function OrderOfServicePage({
         assigneeNames={assigneeNames}
         library={library}
         hasMatchingService={Boolean(service && (service.songs.length || service.sermon || service.scripture))}
+        visibleToTeam={visibleToTeam}
       />
     </div>
   );

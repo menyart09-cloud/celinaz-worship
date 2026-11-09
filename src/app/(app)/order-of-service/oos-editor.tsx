@@ -20,6 +20,7 @@ import {
   removeAssigneeNameAction,
   copyFromLastWeekAction,
   pullSongsFromLogAction,
+  setOosVisibleToTeamAction,
 } from "./actions";
 import { registerFlusher } from "./pending-saves";
 
@@ -53,14 +54,17 @@ export function OosEditor({
   assigneeNames,
   library,
   hasMatchingService,
+  visibleToTeam,
 }: {
   date: string;
   items: OosItemWithSongs[];
   assigneeNames: string[];
   library: SongLibraryRow[];
   hasMatchingService: boolean;
+  visibleToTeam: boolean;
 }) {
   const [pending, startTransition] = useTransition();
+  const [visPending, startVisTransition] = useTransition();
   const [previewing, setPreviewing] = useState(false);
   const [justCopied, setJustCopied] = useState(false);
   const [pdfMenuOpen, setPdfMenuOpen] = useState(false);
@@ -250,6 +254,35 @@ export function OosEditor({
               🔄 Pull from Service Log
             </button>
             <span className="flex-1" />
+            <button
+              type="button"
+              disabled={visPending}
+              onClick={() => startVisTransition(() => setOosVisibleToTeamAction(date, !visibleToTeam))}
+              title={
+                visibleToTeam
+                  ? "The team can see this date's Order of Service — click to hide it again"
+                  : "Not shared with the team yet — click to make this date's Order of Service visible to them"
+              }
+              className={
+                "flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-semibold disabled:opacity-60 " +
+                (visibleToTeam ? "border-good bg-good-soft text-good" : "border-border-strong bg-surface text-text-muted")
+              }
+            >
+              <span
+                className={
+                  "relative h-[18px] w-8 flex-none rounded-full border transition-colors " +
+                  (visibleToTeam ? "border-good bg-good" : "border-border-strong bg-surface-sunk")
+                }
+              >
+                <span
+                  className={
+                    "absolute top-[1px] h-[14px] w-[14px] rounded-full bg-surface shadow transition-transform " +
+                    (visibleToTeam ? "translate-x-[15px]" : "translate-x-[1px]")
+                  }
+                />
+              </span>
+              {visibleToTeam ? "Visible to team" : "Not visible to team"}
+            </button>
             <button
               type="button"
               onClick={() => setPreviewing(true)}
@@ -1210,7 +1243,7 @@ function PrintItem({ item, index, isEven }: { item: OosItemWithSongs; index: num
 // the safe side of the real page boundary.
 const PRINTABLE_HEIGHT_PX = 950;
 
-function PrintView({ date, items, previewing }: { date: string; items: OosItemWithSongs[]; previewing: boolean }) {
+export function PrintView({ date, items, previewing }: { date: string; items: OosItemWithSongs[]; previewing: boolean }) {
   const [breakBeforeIndex, setBreakBeforeIndex] = useState<number | null>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
