@@ -49,7 +49,10 @@ export function NavPills() {
   // reading as active while on /schedule/manage, which isn't this pill.
   const onSchedule = pathname.startsWith("/schedule");
   const TABS = onSchedule
-    ? [{ href: "/schedule", label: "Sound Booth", match: "/schedule", exact: true }]
+    ? [
+        { href: "/schedule", label: "Sound Booth", match: "/schedule", exact: true },
+        { href: "/schedule/praise-team", label: "Praise Team", match: "/schedule/praise-team", exact: true },
+      ]
     : [
         { href: oosHref, label: "Order of Service", match: "/order-of-service", exact: false },
         { href: "/log", label: "Service Log", match: "/log", exact: false },

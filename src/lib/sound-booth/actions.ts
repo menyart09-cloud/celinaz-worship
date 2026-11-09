@@ -14,6 +14,7 @@ import {
   type SoundBoothAvailabilityKind,
 } from "@/db/schema";
 import { getTeamSession, setTeamSession, clearTeamSession } from "./team-session";
+import { upsertRosterByName } from "@/lib/team-roster";
 
 const POSITIONS: SoundBoothPosition[] = ["MediaShout", "Sound", "Live"];
 
@@ -21,17 +22,6 @@ function revalidateSchedule() {
   revalidatePath("/schedule");
   revalidatePath("/schedule/manage");
   revalidatePath("/team/schedule");
-}
-
-// A name already on the roster (any casing) is reused, not duplicated —
-// typing a name that already exists just assigns that same person.
-async function upsertRosterByName(name: string): Promise<string> {
-  const trimmed = name.trim();
-  const existing = await db.select().from(soundBoothRoster);
-  const match = existing.find((r) => r.name.toLowerCase() === trimmed.toLowerCase());
-  if (match) return match.id;
-  const [row] = await db.insert(soundBoothRoster).values({ name: trimmed }).returning();
-  return row.id;
 }
 
 export async function addSoundBoothDateAction(iso: string) {
@@ -49,7 +39,7 @@ export async function addSoundBoothDateAction(iso: string) {
 // Admin-side reassign — can set anyone to any position, including a brand
 // new name typed into the picker.
 export async function assignSoundBoothPositionAction(dateId: string, position: SoundBoothPosition, name: string | null) {
-  const rosterId = name ? await upsertRosterByName(name) : null;
+  const rosterId = name ? await upsertRosterByName(name, "sound_booth") : null;
   await db
     .update(soundBoothAssignments)
     .set({ rosterId, status: "pending", updatedAt: new Date() })
@@ -100,7 +90,7 @@ export async function setOwnSoundBoothAvailabilityAction(dateId: string, kind: S
 // ---- Manage Members (admin only) ----
 
 export async function addSoundBoothRosterMemberAction(name: string) {
-  await upsertRosterByName(name);
+  await upsertRosterByName(name, "sound_booth");
   revalidateSchedule();
 }
 

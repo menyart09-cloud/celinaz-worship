@@ -1,7 +1,8 @@
+import type { TeamGroup } from "@/db/schema";
 import { teamSignOutAction } from "./actions";
 import { TeamNav } from "./team-nav";
 
-export function TeamHeader({ name }: { name: string }) {
+export function TeamHeader({ name, groups }: { name: string; groups: TeamGroup[] }) {
   return (
     <div>
       <div className="mb-4 flex items-center gap-2 text-sm text-text-muted">
@@ -15,7 +16,7 @@ export function TeamHeader({ name }: { name: string }) {
           </button>
         </form>
       </div>
-      <TeamNav />
+      <TeamNav groups={groups} />
     </div>
   );
 }

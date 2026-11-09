@@ -4,6 +4,7 @@ import {
   integer,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   unique,
@@ -233,4 +234,72 @@ export const soundBoothAvailability = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique("sound_booth_availability_date_roster_unique").on(t.dateId, t.rosterId)],
+);
+
+// ---------------------------------------------------------------------------
+// Team groups — the roster above is shared across every team (Sound Booth,
+// Praise Team, more later); which group(s) a person belongs to is what
+// decides what shows up on their phone once they sign in, not a separate
+// account per team. A row here means "this person is in this group" — same
+// has-a-row-or-doesn't convention as oos_visible_dates.
+// ---------------------------------------------------------------------------
+
+export const teamGroupEnum = pgEnum("team_group", ["sound_booth", "praise_team"]);
+export type TeamGroup = (typeof teamGroupEnum.enumValues)[number];
+
+export const teamGroupMembership = pgTable(
+  "team_group_membership",
+  {
+    rosterId: uuid("roster_id")
+      .notNull()
+      .references(() => soundBoothRoster.id, { onDelete: "cascade" }),
+    group: teamGroupEnum("group").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.rosterId, t.group] })],
+);
+
+// ---------------------------------------------------------------------------
+// Praise Team scheduling — singers only, no fixed roles like Sound Booth's
+// positions, so a date just holds a variable list of who's singing rather
+// than three fixed slots. Its own date/availability tables (not reusing
+// Sound Booth's) so the already-live Sound Booth tables are never touched
+// by this feature; the two share only the roster and the status/kind enums.
+// ---------------------------------------------------------------------------
+
+export const praiseTeamDates = pgTable("praise_team_dates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  date: date("date", { mode: "string" }).notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const praiseTeamSingers = pgTable(
+  "praise_team_singers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    dateId: uuid("date_id")
+      .notNull()
+      .references(() => praiseTeamDates.id, { onDelete: "cascade" }),
+    rosterId: uuid("roster_id")
+      .notNull()
+      .references(() => soundBoothRoster.id, { onDelete: "cascade" }),
+    status: soundBoothStatusEnum("status").notNull().default("pending"),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("praise_team_singers_date_roster_unique").on(t.dateId, t.rosterId)],
+);
+
+export const praiseTeamAvailability = pgTable(
+  "praise_team_availability",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    dateId: uuid("date_id")
+      .notNull()
+      .references(() => praiseTeamDates.id, { onDelete: "cascade" }),
+    rosterId: uuid("roster_id")
+      .notNull()
+      .references(() => soundBoothRoster.id, { onDelete: "cascade" }),
+    kind: soundBoothAvailabilityKindEnum("kind").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("praise_team_availability_date_roster_unique").on(t.dateId, t.rosterId)],
 );

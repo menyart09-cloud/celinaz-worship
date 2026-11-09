@@ -1,8 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { SoundBoothRosterRow } from "@/lib/sound-booth/helpers";
-import { addSoundBoothRosterMemberAction, setSoundBoothPhoneAction, setSoundBoothPinAction } from "@/lib/sound-booth/actions";
+import type { RosterWithGroups } from "@/lib/team-groups";
+import type { TeamGroup } from "@/db/schema";
+import { setSoundBoothPhoneAction, setSoundBoothPinAction } from "@/lib/sound-booth/actions";
+import { addRosterMemberAction, setGroupMembershipAction } from "@/lib/team-groups-actions";
+
+const GROUPS: { group: TeamGroup; label: string }[] = [
+  { group: "sound_booth", label: "Sound Booth" },
+  { group: "praise_team", label: "Praise Team" },
+];
 
 // The PIN is bcrypt-hashed at rest, so once saved there's no way to show it
 // back after a reload — only kept here, in memory, for the rest of this
@@ -14,12 +21,19 @@ function buildMessage(name: string, pin: string) {
   return `Hey ${name} — go to https://celinaz-worship.vercel.app/team and sign in as ${name}, PIN ${pin}.`;
 }
 
-function RosterRow({ member, knownPin, onPinSaved }: { member: SoundBoothRosterRow; knownPin: string | undefined; onPinSaved: (pin: string) => void }) {
+function RosterRow({ member, knownPin, onPinSaved }: { member: RosterWithGroups; knownPin: string | undefined; onPinSaved: (pin: string) => void }) {
   const [pinInput, setPinInput] = useState("");
   const [phoneInput, setPhoneInput] = useState(member.phone ?? "");
   const [copied, setCopied] = useState(false);
   const [sent, setSent] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [groupPending, startGroupTransition] = useTransition();
+
+  function toggleGroup(group: TeamGroup, enabled: boolean) {
+    startGroupTransition(async () => {
+      await setGroupMembershipAction(member.id, group, enabled);
+    });
+  }
 
   function savePin() {
     const value = pinInput.trim();
@@ -74,6 +88,23 @@ function RosterRow({ member, knownPin, onPinSaved }: { member: SoundBoothRosterR
         </div>
       </div>
       <div className="mt-2.5 space-y-2 pt-2.5">
+        <div className="flex items-center gap-3.5">
+          <span className="w-11 flex-none text-[0.72rem] font-bold tracking-wide text-text-muted uppercase">Groups</span>
+          <div className="flex flex-wrap gap-3.5">
+            {GROUPS.map(({ group, label }) => (
+              <label key={group} className="flex items-center gap-1.5 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  checked={member.groups.includes(group)}
+                  disabled={groupPending}
+                  onChange={(e) => toggleGroup(group, e.target.checked)}
+                  className="h-4 w-4 accent-accent-strong"
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <span className="w-11 flex-none text-[0.72rem] font-bold tracking-wide text-text-muted uppercase">PIN</span>
           <input
@@ -169,7 +200,7 @@ function RosterRow({ member, knownPin, onPinSaved }: { member: SoundBoothRosterR
   );
 }
 
-export function ManageRoster({ roster }: { roster: SoundBoothRosterRow[] }) {
+export function ManageRoster({ roster }: { roster: RosterWithGroups[] }) {
   const [knownPins, setKnownPins] = useState<KnownPins>({});
   const [newName, setNewName] = useState("");
   const [pending, startTransition] = useTransition();
@@ -178,7 +209,7 @@ export function ManageRoster({ roster }: { roster: SoundBoothRosterRow[] }) {
     const name = newName.trim();
     if (!name) return;
     startTransition(async () => {
-      await addSoundBoothRosterMemberAction(name);
+      await addRosterMemberAction(name);
       setNewName("");
     });
   }

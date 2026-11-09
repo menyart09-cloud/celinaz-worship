@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTeamSession } from "@/lib/sound-booth/team-session";
 import { getAllOosDates, getOosItems, getOosVisibleDatesSet } from "@/lib/queries";
+import { getGroupsForRoster } from "@/lib/team-groups";
 import { isoToMdy } from "@/lib/dates";
 import { TeamHeader } from "../team-header";
 import { PrintView } from "../../(app)/order-of-service/oos-editor";
@@ -12,6 +13,7 @@ export default async function TeamOosPage({ searchParams }: { searchParams: Prom
   const session = await getTeamSession();
   if (!session) redirect("/team");
 
+  const groups = await getGroupsForRoster(session.rosterId);
   const { date } = await searchParams;
   const visible = await getOosVisibleDatesSet();
 
@@ -23,7 +25,7 @@ export default async function TeamOosPage({ searchParams }: { searchParams: Prom
     const items = await getOosItems(date);
     return (
       <div>
-        <TeamHeader name={session.name} />
+        <TeamHeader name={session.name} groups={[...groups]} />
         <Link href="/team/order-of-service" className="mb-3 inline-block text-sm font-bold text-accent-strong">
           &lsaquo; Back to Order of Service
         </Link>
@@ -38,7 +40,7 @@ export default async function TeamOosPage({ searchParams }: { searchParams: Prom
 
   return (
     <div>
-      <TeamHeader name={session.name} />
+      <TeamHeader name={session.name} groups={[...groups]} />
       <div className="rounded-xl border border-border bg-surface">
         {allDates.length === 0 && <p className="p-4 text-sm text-text-muted">Nothing here yet.</p>}
         {allDates.map((d) => {
