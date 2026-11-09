@@ -24,6 +24,7 @@ function buildMessage(name: string, pin: string) {
 function RosterRow({ member, knownPin, onPinSaved }: { member: RosterWithGroups; knownPin: string | undefined; onPinSaved: (pin: string) => void }) {
   const [pinInput, setPinInput] = useState("");
   const [phoneInput, setPhoneInput] = useState(member.phone ?? "");
+  const [savedPhone, setSavedPhone] = useState(member.phone ?? "");
   const [copied, setCopied] = useState(false);
   const [sent, setSent] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -48,8 +49,16 @@ function RosterRow({ member, knownPin, onPinSaved }: { member: RosterWithGroups;
   function savePhone() {
     startTransition(async () => {
       await setSoundBoothPhoneAction(member.id, phoneInput);
+      setSavedPhone(phoneInput);
     });
   }
+
+  // Solid blue only while there's something typed that hasn't actually been
+  // saved yet — a glance-able reminder not to navigate away mid-edit. The
+  // PIN never round-trips back from the server (it's hashed at rest), so
+  // "saved" for it just means "matches what this session already saved."
+  const pinDirty = pinInput.trim() !== "" && pinInput.trim() !== knownPin;
+  const phoneDirty = phoneInput !== savedPhone;
 
   const message = knownPin ? buildMessage(member.name, knownPin) : null;
   const canText = !!message && !!phoneInput.trim();
@@ -119,7 +128,10 @@ function RosterRow({ member, knownPin, onPinSaved }: { member: RosterWithGroups;
             type="button"
             disabled={pending}
             onClick={savePin}
-            className="flex-none rounded-full border border-accent-strong bg-accent-strong px-3.5 py-1.5 text-xs font-bold text-white"
+            className={
+              "flex-none rounded-full border px-3.5 py-1.5 text-xs font-bold " +
+              (pinDirty ? "border-accent-strong bg-accent-strong text-white" : "border-border-strong bg-surface text-text-muted")
+            }
           >
             Save
           </button>
@@ -137,7 +149,10 @@ function RosterRow({ member, knownPin, onPinSaved }: { member: RosterWithGroups;
             type="button"
             disabled={pending}
             onClick={savePhone}
-            className="flex-none rounded-full border border-accent-strong bg-accent-strong px-3.5 py-1.5 text-xs font-bold text-white"
+            className={
+              "flex-none rounded-full border px-3.5 py-1.5 text-xs font-bold " +
+              (phoneDirty ? "border-accent-strong bg-accent-strong text-white" : "border-border-strong bg-surface text-text-muted")
+            }
           >
             Save
           </button>
