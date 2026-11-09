@@ -268,6 +268,11 @@ export function OosEditor({
                 (visibleToTeam ? "border-good bg-good-soft text-good" : "border-border-strong bg-surface text-text-muted")
               }
             >
+              {/* Label before the switch, not after — Comic Neue's capital
+                  "V" has an unusual swash at the top that, sitting flush
+                  against the switch's round knob, reads as if the knob
+                  were cutting the letter off. */}
+              <span>{visibleToTeam ? "Visible to team" : "Not visible to team"}</span>
               <span
                 className={
                   "relative h-[18px] w-8 flex-none rounded-full border transition-colors " +
@@ -281,7 +286,6 @@ export function OosEditor({
                   }
                 />
               </span>
-              {visibleToTeam ? "Visible to team" : "Not visible to team"}
             </button>
             <button
               type="button"
