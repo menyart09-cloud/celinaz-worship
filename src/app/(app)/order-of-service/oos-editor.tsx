@@ -312,13 +312,14 @@ export function OosEditor({
             scripture under Message, from what&apos;s already logged for this date.
           </p>
 
-          <div className="no-print mb-3">
+          <div className="no-print mb-5 flex justify-center">
             <button
               type="button"
               onClick={() => addItem(null)}
-              className="w-full rounded-lg border border-dashed border-border-strong px-3 py-2 text-sm font-semibold text-text-muted hover:border-accent hover:text-accent-strong"
+              title="Add item at top"
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-border-strong bg-surface text-text-muted hover:border-accent hover:text-accent-strong"
             >
-              + Add item at top
+              +
             </button>
           </div>
 
@@ -329,29 +330,49 @@ export function OosEditor({
             </p>
           )}
 
-          <div className="overflow-hidden rounded-xl border border-border bg-surface">
+          <div>
             {items.flatMap((item, i) => [
-              <OosRow
-                key={item.id}
-                item={item}
-                isEven={i % 2 === 1}
-                assigneeNames={assigneeNames}
-                library={library}
-                otherItems={items.filter((other) => other.id !== item.id)}
-                canMoveUp={i > 0}
-                canMoveDown={i < items.length - 1}
-              />,
-              // Sits right on the border between this item and the next (or,
-              // for the last item, the bottom of the list) — floated on top
-              // of both neighbors instead of living inside either one, so it
-              // reads as "insert a new item here" rather than an action on
-              // whichever row it happens to be drawn inside of.
-              <div key={`${item.id}-insert`} className="no-print relative h-0">
+              // Each item is its own bubble sitting on a little peeking
+              // stack, instead of one continuous bordered list — the
+              // alternating color the old striped rows carried lives in the
+              // peek now, and the numbered stamp gives each item an
+              // unambiguous position even before you read it.
+              <div key={item.id} className="relative my-7">
+                <div
+                  className={
+                    "pointer-events-none absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-2xl border " +
+                    (i % 2 === 1 ? "border-warn-soft-border bg-warn-soft" : "border-accent-soft-border bg-accent-soft")
+                  }
+                />
+                <div
+                  className={
+                    "pointer-events-none absolute inset-0 translate-x-3 translate-y-2.5 rounded-2xl opacity-90 " +
+                    (i % 2 === 1 ? "bg-warn-soft-border" : "bg-accent-soft-border")
+                  }
+                />
+                <span
+                  className={
+                    "font-mono-tab no-print absolute -top-3.5 left-5 z-10 flex h-7 w-7 items-center justify-center rounded-full text-[0.8rem] font-bold text-white shadow " +
+                    (i % 2 === 1 ? "bg-warn" : "bg-accent-strong")
+                  }
+                >
+                  {i + 1}
+                </span>
+                <OosRow
+                  item={item}
+                  assigneeNames={assigneeNames}
+                  library={library}
+                  otherItems={items.filter((other) => other.id !== item.id)}
+                  canMoveUp={i > 0}
+                  canMoveDown={i < items.length - 1}
+                />
+              </div>,
+              <div key={`${item.id}-insert`} className="no-print flex justify-center">
                 <button
                   type="button"
                   onClick={() => addItem(item.id)}
-                  title="Insert a new item below this one"
-                  className="absolute -top-3 left-4 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-border-strong bg-surface text-text-faint shadow-sm hover:border-accent hover:text-accent-strong"
+                  title="Insert a new item here"
+                  className="flex h-7 w-7 items-center justify-center rounded-full border border-border-strong bg-surface text-text-faint shadow-sm hover:border-accent hover:text-accent-strong"
                 >
                   +
                 </button>
@@ -404,7 +425,6 @@ function SongNote({ linkId, initialValue }: { linkId: string; initialValue: stri
 
 function OosRow({
   item,
-  isEven,
   assigneeNames,
   library,
   otherItems,
@@ -412,7 +432,6 @@ function OosRow({
   canMoveDown,
 }: {
   item: OosItemWithSongs;
-  isEven: boolean;
   assigneeNames: string[];
   library: SongLibraryRow[];
   otherItems: OosItemWithSongs[];
@@ -583,12 +602,7 @@ function OosRow({
   }
 
   return (
-    <div
-      className={
-        "flex flex-col gap-2 border-t border-border p-4 first:border-t-0 md:flex-row md:gap-3 " +
-        (isEven ? "bg-surface-alt" : "")
-      }
-    >
+    <div className="relative z-[1] flex flex-col gap-2 rounded-2xl border border-border-strong bg-surface p-4 shadow-[0_5px_16px_rgba(30,25,15,0.12)] md:flex-row md:gap-3">
       <div className="no-print flex flex-none gap-1 md:flex-col md:pt-0.5">
         <button
           type="button"
