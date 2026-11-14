@@ -1,5 +1,6 @@
 import { getPraiseTeamDates, getPraiseTeamRosterNames } from "@/lib/praise-team/queries";
 import { PraiseTeamGrid } from "./praise-team-grid";
+import { AdminMobilePraiseTeam } from "./admin-mobile-praise-team";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,12 @@ export default async function PraiseTeamPage() {
         Add a date, then add whoever&rsquo;s singing — there&rsquo;s no fixed slots like Sound Booth, just
         a list of singers for each date. Click a name to remove them.
       </p>
-      <PraiseTeamGrid dates={dates} roster={roster} />
+      <div className="hidden md:block">
+        <PraiseTeamGrid dates={dates} roster={roster} />
+      </div>
+      <div className="md:hidden">
+        <AdminMobilePraiseTeam dates={dates} roster={roster} />
+      </div>
     </div>
   );
 }
