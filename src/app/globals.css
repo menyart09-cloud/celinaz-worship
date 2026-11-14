@@ -174,15 +174,39 @@ body {
   align-items: start;
 }
 
-/* The printed page itself is always full letter-width -- this is purely
-   for the on-screen Preview when it's opened on a narrow phone, where the
-   desktop column widths above don't leave the "what" column any room at
-   all (it collapses to 0 and "who"/notes overlap it). Narrower, tighter
-   columns here, not a stacked layout, so Preview still shows the same
-   shape the printed page will actually have. */
-@media (max-width: 540px) {
+/* Sized to how much room PrintView's own box actually has, not the
+   browser viewport -- the admin's on-screen Preview sits almost at full
+   page width, but the team's phone view nests it inside a narrower
+   centered column plus a card's own padding, so the same viewport width
+   leaves PrintView with noticeably less room in one place than the
+   other. A container query reacts to that real width directly instead of
+   guessing it from the viewport, so both places size correctly. */
+.oos-print-page {
+  container-type: inline-size;
+  container-name: oos-page;
+}
+
+/* The printed page itself is always full letter-width -- these are purely
+   for the on-screen Preview, where the desktop column widths above don't
+   leave the "what" column any room at all (it collapses to 0 and
+   "who"/notes overlap it). Narrower, tighter columns here, not a stacked
+   layout, so Preview still shows the same shape the printed page will
+   actually have. */
+@container oos-page (max-width: 540px) {
   .oos-print-row {
     grid-template-columns: 1.1rem 1fr 4.5rem 5.5rem;
     column-gap: 0.625rem;
+  }
+}
+
+/* A phone-width container (the team's own view) needs its own, tighter
+   step rather than stretching the 540px tier's columns further -- those
+   were sized assuming closer to that full 540px, and on an actual phone
+   screen nested two layers deep they leave "what" only ~90px, which is
+   what was reading as overlapping, badly wrapped text. */
+@container oos-page (max-width: 380px) {
+  .oos-print-row {
+    grid-template-columns: 1.1rem 1fr 3.5rem 4rem;
+    column-gap: 0.4rem;
   }
 }

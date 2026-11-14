@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getTeamSession } from "@/lib/sound-booth/team-session";
 import { getAllOosDates, getOosItems, getOosVisibleDatesSet } from "@/lib/queries";
 import { getGroupsForRoster } from "@/lib/team-groups";
-import { isoToMdy } from "@/lib/dates";
+import { isoToMdy, todayIso } from "@/lib/dates";
 import { TeamHeader } from "../team-header";
 import { PrintView } from "../../(app)/order-of-service/oos-editor";
 
@@ -38,12 +38,19 @@ export default async function TeamOosPage({ searchParams }: { searchParams: Prom
 
   const allDates = await getAllOosDates();
 
+  // The team doesn't need the whole back catalog — just what's coming up,
+  // plus the one most recent Sunday behind today, so last week's service
+  // is still there for anyone who missed checking it that day.
+  const today = todayIso();
+  const cutoff = allDates.findIndex((d) => d.date <= today);
+  const dates = cutoff === -1 ? allDates : allDates.slice(0, cutoff + 1);
+
   return (
     <div>
       <TeamHeader name={session.name} groups={[...groups]} />
       <div className="rounded-xl border border-border bg-surface">
-        {allDates.length === 0 && <p className="p-4 text-sm text-text-muted">Nothing here yet.</p>}
-        {allDates.map((d) => {
+        {dates.length === 0 && <p className="p-4 text-sm text-text-muted">Nothing here yet.</p>}
+        {dates.map((d) => {
           const isVisible = visible.has(d.date);
           return (
             <div

@@ -1303,7 +1303,7 @@ export function PrintView({ date, items, previewing }: { date: string; items: Oo
     // own 0.5in margins (globals.css @page) leave about 720px of actual
     // printable width, so the old cap was giving up ~48px of real page
     // width for no reason, forcing more wrapping than the paper needs.
-    <div className="mx-auto max-w-[45rem]">
+    <div className="oos-print-page mx-auto max-w-[45rem]">
       <div ref={headerRef} className="mb-3 flex items-center gap-3">
         {/* A plain <img>, not next/image — this only ever renders for
             print/preview, where Next's lazy-loading and layout machinery
