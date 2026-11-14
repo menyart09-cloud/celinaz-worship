@@ -8,10 +8,6 @@ import { usePathname } from "next/navigation";
 // side. Whichever is active decides which pill row NavPills renders below.
 export function TopSwitch() {
   const pathname = usePathname();
-  // The "View as" preview has its own banner and tabs styled to look like
-  // the real /team chrome — stacking the admin switch/pills on top of it
-  // would show two confusingly similar navs on one page.
-  if (pathname.startsWith("/schedule/manage/preview")) return null;
   const onManage = pathname.startsWith("/schedule/manage");
   const onSchedule = pathname.startsWith("/schedule") && !onManage;
 

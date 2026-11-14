@@ -44,10 +44,6 @@ export function NavPills() {
   const oosDate = currentDate ?? lastKnownDate;
   const oosHref = oosDate ? `/order-of-service?date=${oosDate}` : "/order-of-service";
 
-  // Same reason as TopSwitch — the preview already renders its own
-  // look-alike tabs, and these would be a second, confusingly identical row.
-  if (pathname.startsWith("/schedule/manage/preview")) return null;
-
   // The sound booth side only has one view today, so it gets this same pill
   // row rather than its own separate nav chrome — "exact" keeps it from
   // reading as active while on /schedule/manage, which isn't this pill.

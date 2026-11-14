@@ -32,7 +32,7 @@ function pad2(n: number) {
   return String(n).padStart(2, "0");
 }
 
-export function TeamPraiseTeam({ dates, viewerId, readOnly }: { dates: PraiseTeamDateRow[]; viewerId: string; readOnly?: boolean }) {
+export function TeamPraiseTeam({ dates, viewerId }: { dates: PraiseTeamDateRow[]; viewerId: string }) {
   const today = todayIso();
   const initialIndex = useMemo(() => {
     const upcoming = dates.findIndex((d) => d.date >= today);
@@ -162,14 +162,13 @@ export function TeamPraiseTeam({ dates, viewerId, readOnly }: { dates: PraiseTea
         </div>
       </div>
 
-      <DateCard date={selected} viewerId={viewerId} readOnly={readOnly} />
+      <DateCard date={selected} viewerId={viewerId} />
     </div>
   );
 }
 
-function DateCard({ date, viewerId, readOnly }: { date: PraiseTeamDateRow; viewerId: string; readOnly?: boolean }) {
+function DateCard({ date, viewerId }: { date: PraiseTeamDateRow; viewerId: string }) {
   const [pending, startTransition] = useTransition();
-  const disabled = readOnly || pending;
   const away = allPraiseTeamUnavailable(date);
   const iAmAvailable = date.available.some((a) => a.rosterId === viewerId);
   const iAmAway = away.some((a) => a.rosterId === viewerId);
@@ -210,11 +209,10 @@ function DateCard({ date, viewerId, readOnly }: { date: PraiseTeamDateRow; viewe
         <div className="flex gap-1.5">
           <button
             type="button"
-            disabled={disabled}
-            title={readOnly ? "Preview only" : undefined}
-            onClick={readOnly ? undefined : () => setAvailability("available")}
+            disabled={pending}
+            onClick={() => setAvailability("available")}
             className={
-              "rounded-full border px-3 py-1.5 text-sm font-bold disabled:opacity-100 " +
+              "rounded-full border px-3 py-1.5 text-sm font-bold " +
               (iAmAvailable ? "border-good bg-good text-white" : "border-border-strong bg-surface text-text-muted")
             }
           >
@@ -222,11 +220,10 @@ function DateCard({ date, viewerId, readOnly }: { date: PraiseTeamDateRow; viewe
           </button>
           <button
             type="button"
-            disabled={disabled}
-            title={readOnly ? "Preview only" : undefined}
-            onClick={readOnly ? undefined : () => setAvailability("unavailable")}
+            disabled={pending}
+            onClick={() => setAvailability("unavailable")}
             className={
-              "rounded-full border px-3 py-1.5 text-sm font-bold disabled:opacity-100 " +
+              "rounded-full border px-3 py-1.5 text-sm font-bold " +
               (iAmAway ? "border-declined bg-declined text-white" : "border-border-strong bg-surface text-text-muted")
             }
           >
@@ -244,11 +241,10 @@ function DateCard({ date, viewerId, readOnly }: { date: PraiseTeamDateRow; viewe
           <div className="flex flex-none gap-1.5">
             <button
               type="button"
-              disabled={disabled}
-              title={readOnly ? "Preview only" : undefined}
-              onClick={readOnly ? undefined : () => setStatus("yes")}
+              disabled={pending}
+              onClick={() => setStatus("yes")}
               className={
-                "rounded-full border px-2.5 py-1 text-xs font-bold disabled:opacity-100 " +
+                "rounded-full border px-2.5 py-1 text-xs font-bold " +
                 (mine.status === "yes" ? "border-good bg-good text-white" : "border-border-strong bg-surface text-text-muted")
               }
             >
@@ -256,11 +252,10 @@ function DateCard({ date, viewerId, readOnly }: { date: PraiseTeamDateRow; viewe
             </button>
             <button
               type="button"
-              disabled={disabled}
-              title={readOnly ? "Preview only" : undefined}
-              onClick={readOnly ? undefined : () => setStatus("no")}
+              disabled={pending}
+              onClick={() => setStatus("no")}
               className={
-                "rounded-full border px-2.5 py-1 text-xs font-bold disabled:opacity-100 " +
+                "rounded-full border px-2.5 py-1 text-xs font-bold " +
                 (mine.status === "no" ? "border-declined bg-declined text-white" : "border-border-strong bg-surface text-text-muted")
               }
             >
