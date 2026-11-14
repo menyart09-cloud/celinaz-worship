@@ -35,3 +35,11 @@ export async function getGroupsForRoster(rosterId: string): Promise<Set<TeamGrou
   const rows = await db.select({ group: teamGroupMembership.group }).from(teamGroupMembership).where(eq(teamGroupMembership.rosterId, rosterId));
   return new Set(rows.map((r) => r.group));
 }
+
+// Manage Members' "View as" preview — just enough to know whose screen is
+// being shown and which tabs they'd actually have, without a PIN or a real
+// team session.
+export async function getRosterMemberName(rosterId: string): Promise<string | null> {
+  const [row] = await db.select({ name: soundBoothRoster.name }).from(soundBoothRoster).where(eq(soundBoothRoster.id, rosterId));
+  return row?.name ?? null;
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import type { RosterWithGroups } from "@/lib/team-groups";
 import type { TeamGroup } from "@/db/schema";
@@ -95,6 +96,12 @@ function RosterRow({ member, knownPin, onPinSaved }: { member: RosterWithGroups;
         <div className={"flex-1 text-xs " + (member.hasPin ? "font-bold text-good" : "italic text-text-faint")}>
           {member.hasPin ? "PIN active" : "No access yet"}
         </div>
+        <Link
+          href={`/schedule/manage/preview/${member.id}`}
+          className="flex-none rounded-full border border-border-strong bg-surface px-3 py-1 text-xs font-bold text-text-muted hover:border-accent hover:text-accent-strong"
+        >
+          View as {member.name} &rsaquo;
+        </Link>
       </div>
       <div className="mt-2.5 space-y-2 pt-2.5">
         <div className="flex items-center gap-3.5">
