@@ -337,7 +337,7 @@ export function OosEditor({
               // alternating color the old striped rows carried lives in the
               // peek now, and the numbered stamp gives each item an
               // unambiguous position even before you read it.
-              <div key={item.id} className="relative my-7">
+              <div key={item.id} className="relative my-4">
                 <div
                   className={
                     "pointer-events-none absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-2xl border " +
