@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, type CSSProperties } from "react";
 import { teamSignInAction } from "./actions";
 
 export function TeamSignIn({ names }: { names: string[] }) {
@@ -34,12 +34,25 @@ export function TeamSignIn({ names }: { names: string[] }) {
           <input type="hidden" name="name" value={name} />
           <label className="block text-sm font-semibold text-text-muted">{name} &middot; enter your PIN</label>
           <input
-            type="password"
+            type="text"
             inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="off"
             name="pin"
             value={pin}
             onChange={(e) => setPin(e.target.value)}
             autoFocus
+            // type="password" is what invited this in the first place: a
+            // desktop browser's password manager treats it as a real login
+            // and remembers it, then auto-fills that OLD PIN over whatever
+            // was freshly texted the next time this person's PIN gets
+            // reset — the admin can resend the correct code forever and the
+            // browser keeps silently resubmitting the stale one. Plain
+            // text="text" isn't a credential a browser will offer to save
+            // or auto-fill; -webkit-text-security keeps the masked-dots
+            // look on Chrome/Safari/Edge (Firefox just shows the digits,
+            // an acceptable tradeoff for a low-stakes numeric PIN).
+            style={{ WebkitTextSecurity: "disc" } as CSSProperties}
             className="mt-2 w-full rounded-lg border border-border-strong bg-surface px-3 py-2 text-lg tracking-widest text-foreground"
           />
           {state?.error && <p className="mt-2 text-sm font-semibold text-declined">{state.error}</p>}
